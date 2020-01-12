@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Just Check</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="Logo/halfLogoV1.png">
+    <link rel="stylesheet" type="text/css" href="Semantic-UI-CSS-master/semantic.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="Semantic-UI-CSS-master/semantic.min.js"></script>
+    <style>
+        body {
+            background-image: url("Image/login-wallpaper1.png");
+            background-size: 100%
+        }
+
+        .container {
+            margin-top: 5%
+        }
+
+        .grid {
+            color: red;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $("#Login").click(function () {
+                $('#login-modal')
+                    .modal('setting', 'transition', 'horizontal flip')
+                    .modal('show')
+                    ;
+            });
+            $("#Reg").click(function () {
+                $('#reg-modal')
+                    .modal('setting', 'transition', 'horizontal flip')
+                    .modal('show')
+                    ;
+            });
+            $("#cpassword").keyup(function () {
+                console.log($("#cpassword").val());
+                if ($("#rpassword").val() != $("#cpassword").val()) {
+                    $("#cpass").removeClass("hidden");
+                } else {
+                    $("#cpass").addClass("hidden");
+                }
+            });
+            $("#rpassword").keyup(function () {
+                console.log($("#rpassword").val().length);
+                if ($("#rpassword").val().length < 8) {
+                    $("#pass").removeClass("hidden");
+                } else {
+                    $("#pass").addClass("hidden");
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="ui container">
+        <div class="ui grid">
+            <div class="eight wide column">
+                <img src="Logo/fullLogoV3.png" width="400px">
+            </div>
+            <div class="eight wide column"></div>
+            <div class="eight wide column">
+                <div class="ui container">
+                    <button class="ui inverted teal button" id="Login" style="width:150px;height: 40px;"><i
+                            class="unlock alternate icon"></i> Login</button>
+                    &nbsp;
+                    <button class="ui inverted orange button" id="Reg" style="width:120px;height: 40px;"><i
+                            class="edit outline icon"></i> Register</button>
+                    <br><br>
+                    <button class="ui inverted green button" id="Andriod" style="width:280px;height: 40px;"><i
+                            class="android icon"></i> Application for Andriod</button>
+                    <br><br>
+                    <button class="ui inverted gray button" id="Ios" style="width:280px;height: 40px;"><i
+                            class="apple icon"></i>
+                        Application for IOS</button>
+                </div>
+            </div>
+            <div class="eight wide column"></div>
+
+        </div>
+    </div>
+    <div class="ui tiny modal" id="login-modal">
+        <i class="close icon"></i>
+        <div class="header">
+            <i class="unlock alternate icon"></i> Login
+        </div>
+        <div class=" content">
+
+            <form class="ui form error" method="POST" action="login">
+                <div class="field">
+                    <label>Teacher ID/Student ID</label>
+                    <input type="text" name="id" id="id" placeholder="EX:B59XXXXX/12345678">
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" name="password" id="password" placeholder="Password">
+                </div>
+                <div class="field">
+                    <a href="#">
+                        <p>forget password?</p>
+                    </a>
+                </div>
+                <button class="ui button" type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+    <div class="ui tiny modal" id="reg-modal">
+        <i class="close icon"></i>
+        <div class="header">
+            <i class="edit outline icon"></i> Register
+        </div>
+        <div class=" content">
+
+            <form class="ui form error" method="POST" action="register">
+                <div class="field">
+                    <label>Student ID</label>
+                    <div class="fields">
+                        <input type="text" name="studentId" pattern="[B,b]{1}[0-9]{7}" id="studentId"
+                            placeholder="Ex:B59XXXXX">
+                    </div>
+                    <label>Password</label>
+                    <div class="two fields">
+                        <div class="field">
+                            <input type="password" name="rpassword" id="rpassword" placeholder="Password">
+                        </div>
+                        <div class="field">
+                            <input type="password" name="cpassword" id="cpassword" placeholder="Confirm-Password">
+                        </div>
+                    </div>
+                    <div class="ui error message hidden" id="cpass">
+                        <div class="header">Password not match!</div>
+                        <p>Please confirm password again.</p>
+                    </div>
+                    <div class="ui error message hidden" id="pass">
+                        <div class="header">Invalid password!</div>
+                        <p>Please enter password more than 8 character</p>
+                    </div>
+                    <label>Name</label>
+                    <div class="two fields">
+                        <div class="field">
+                            <input type="text" name="fName" placeholder="First Name">
+                        </div>
+                        <div class="field">
+                            <input type="text" name="lName" placeholder="Last Name">
+                        </div>
+                    </div>
+                    <label>Email</label>
+                    <div class="fields">
+                        <input type="email" name="eMail" id="eMail" placeholder="E-mail">
+                    </div>
+                    <label>Phone</label>
+                    <div class="fields">
+                        <input type="text" pattern="[0-9]{10}" name="phone" id="phone" placeholder="Ex:0999999999">
+                    </div>
+                </div>
+                <button class="ui button" type="submit">Register</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Welcome Student!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="Logo/halfLogoV1.png">
+    <link rel="stylesheet" type="text/css" href="Semantic-UI-CSS-master/semantic.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="Semantic-UI-CSS-master/semantic.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+        }
+
+        #logo {
+            margin-top: 50px;
+            width: 200px;
+        }
+
+        #add {
+            float: right;
+        }
+
+        #logout {
+            float: right;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $("#photo").click(function () {
+                $('#photo_modal')
+                    .modal('setting', 'transition', 'horizontal flip')
+                    .modal('show')
+                    ;
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="ui container">
+        <div class="ui grid">
+            <div class="eight wide column">
+                <a href="home"><img src="Logo/fullLogoV3.png" id="logo"></a>
+            </div>
+            <div class="eight wide column">
+                <br>
+                <br>
+                <button class="ui inverted red button" onclick="window.location.href='logout'" id="logout"><i
+                        class="sign out alternate icon"></i> Logout</button><br><br><br><br><br>
+            </div>
+            <div class="sixteen wide column">
+                <h1 class="ui horizontal divider header" style="color: white;">
+                    <i class="book icon"></i>
+                    <%- class_id -%>
+                </h1>
+                <h2 align="center" style="color: white;"><%- class_name -%>
+                </h2>
+                <h3 class="ui horizontal divider header" style="color: white;">
+                    <i class="bar chart icon"></i>
+                    Details
+                </h3>
+            </div>
+            <div class="sixteen wide column">
+                <table class="ui selectable inverted brown table" id="tclass">
+                    <thead class="center aligned">
+                        <tr>
+                            <th>No</th>
+                            <th>Class Round</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Location</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="showclass" class="center aligned">
+                        <%- test -%>
+                    </tbody>
+                </table>
+                <div align="center" style="color: white;">
+                    <%- test2 -%>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui tiny modal" id="photo_modal">
+        <i class="close icon"></i>
+        <div class="header">
+            <i class="edit outline icon"></i> Photo
+        </div>
+        <div class=" content">
+            <div class="eight wide column">
+                <img src="Logo/fullLogoV3.png" width="400px">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

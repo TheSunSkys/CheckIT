@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <title>Welcome Teacher!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="Logo/halfLogoV1.png">
+    <link rel="stylesheet" type="text/css" href="Semantic-UI-CSS-master/semantic.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="Semantic-UI-CSS-master/semantic.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+        }
+
+        #logo {
+            margin-top: 50px;
+            width: 200px;
+        }
+
+        #add {
+            float: right;
+        }
+
+        #logout {
+            float: right;
+        }
+    </style>
+    <!-- about excel file -->
+    <!-- <script src="xlsx.full.min.js"></script>
+    <script>
+        /* set up XMLHttpRequest */
+        var url = "test.csv";
+        var oReq = new XMLHttpRequest();
+        oReq.open("GET", url, true);
+        oReq.responseType = "arraybuffer";
+        
+        oReq.onload = function(e) {
+            var arraybuffer = oReq.response;
+            
+            /* convert data to binary string */
+            var data = new Uint8Array(arraybuffer);
+            var arr = new Array();
+            for(var i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
+            var bstr = arr.join("");
+            
+            /* Call XLSX */
+            var workbook = XLSX.read(bstr, {type:"binary"});
+            
+            /* DO SOMETHING WITH workbook HERE */
+            var first_sheet_name = workbook.SheetNames[0];
+            /* Get worksheet */
+            var worksheet = workbook.Sheets[first_sheet_name];
+            console.log(XLSX.utils.sheet_to_json(worksheet,{raw:true}));
+        }
+        
+        oReq.send();
+    </script> -->
+    <script>
+        $(document).ready(function () {
+            $("#addstd").click(function () {
+                $('#std_modal')
+                    .modal('setting', 'transition', 'horizontal flip')
+                    .modal('show')
+                    ;
+            });
+            $("#checkSTD").click(function () {
+                $('#std_check_modal')
+                .modal('setting', 'transition', 'horizontal flip')
+                    .modal('show')
+                    ;
+            })
+        });
+    </script>
+
+    <!-- Pie Chat -->
+    <!-- <script>
+        window.onload = function() {
+        
+        var chart = new CanvasJS.Chart("chartContainer", {
+            animationEnabled: true,
+            title: {
+                text: "Desktop Search Engine Market Share - 2016"
+            },
+            data: [{
+                type: "pie",
+                startAngle: 240,
+                yValueFormatString: "##0.00\"%\"",
+                indexLabel: "{label} {y}",
+                dataPoints: [
+                    {y: 80, label: "Google"},
+                    {y: 20, label: "Bing"}
+                ]
+            }]
+        });
+        chart.render();
+        
+        }
+    </script> -->
+        <script>
+            function download_csv() {
+                data = document.getElementById("csv").value;
+                let a = []
+                var array = data.split("+")
+                array.forEach(element => {
+                    let valueSplit = element.split(",")
+                    a.push(valueSplit)
+                });
+                console.log(a)
+                var csv = 'No,ID,Name,Status\n';
+                a.forEach(function(row) {
+                        csv += row.join(',');
+                        csv += "\n";
+                });
+            
+                var hiddenElement = document.createElement('a');
+                hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+                hiddenElement.target = '_blank';
+                hiddenElement.download = document.getElementById("class_ID").value + "_" + document.getElementById("class_NAME").value + 'list_of_students.csv';
+                hiddenElement.click();
+            }
+        </script>
+</head>
+
+<body>
+    <div id ="demo"></div>
+    <div class="ui container">
+        <div class="ui grid">
+            <div class="eight wide column">
+                <a href="home"><img src="Logo/fullLogoV3.png" id="logo"></a>
+            </div>
+            <div class="eight wide column">
+                <br>
+                <br>
+                <button class="ui inverted red button" onclick="window.location.href='logout'" id="logout"><i
+                        class="sign out alternate icon"></i> Logout</button><br><br><br><br><br>
+            </div>
+            <div class="sixteen wide column">
+                <h1 class="ui horizontal divider header" style="color: white;">
+                    <i class="book icon"></i>
+                    <%- class_id -%>
+                </h1>
+                <input type="hidden" id="class_ID" value="<%- class_id -%>">
+                <h2 align="center" style="color: white;">
+                    <%- class_name -%>
+                </h2>
+                <input type="hidden" id="class_NAME" value="<%- class_name -%>">
+                <h3 class="ui horizontal divider header" style="color: white;">
+                    <i class="bar chart icon"></i>
+                    Details
+                </h3>
+            </div>
+            <div class="sixteen wide column">
+                <div align="right">
+                    <button class="ui inverted green button" id="addstd" name="addstd">Add Student</button>
+                    <button class="ui inverted green button" id="checkSTD" name="checkSTD">Check Student</button>
+                    <button class="ui inverted green button" onclick="download_csv()">CSV</button>
+                    <input type="hidden" id="csv" name="csv" value="<%- csv -%>">
+                    <br><br>
+                    <form class="ui form error" method="POST" action="search">
+                        <div class="ui action input" style="width: 30%;">
+                            <input type="text" name="seach_value" id="seach_value" placeholder="Search...">
+                        </div>
+                        <input type="hidden" id="class" name="class" value="<%= class_id %>">
+                        <input type="hidden" id="class_name" name="class_name" value="<%- class_name -%>">
+                        <button class="ui button" type="submit">Search</button>
+                    </form>
+                </div>
+            </div>
+            <div class="sixteen wide column">
+                <table class="ui selectable inverted brown table" id="tclass">
+                    <thead>
+                        <tr class="center aligned">
+                            <th>No</th>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="showclass" class="center aligned">
+                        <form class="ui form" novalidate="novalidate" align ="center" >
+                            <%- test -%>
+                        </form>
+                    </tbody>
+                </table>
+                <div align="center" style="color: white;">
+                    <%- test2 -%>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui tiny modal" id="std_modal">
+        <i class="close icon"></i>
+        <div class="header">
+            <i class="edit outline icon"></i>Add Student
+        </div>
+        <div class=" content">
+            <form class="ui form error" method="POST" action="addSTD">
+                <label>Srudent ID</label>
+                <div class="fields">
+                    <input type="text" name="std_id" id="std_id" placeholder="Ex:B5970000">
+                </div>
+                <label>First Name</label>
+                <div class="fields">
+                    <input type="text" name="firstname" id="firstname">
+                </div>
+                <label>Last Name</label>
+                <div class="fields">
+                    <input type="text" name="lastname" id="lastname">
+                </div>
+                <button class="ui button" type="submit">Add Student</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="ui tiny modal" id="std_check_modal">
+        <i class="close icon"></i>
+        <div class="header">
+            <i class="edit outline icon"></i>Add Student
+        </div>
+        <div class=" content">
+            <form enctype="multipart/form-data" action="/uploadFile" method="post">
+                <input id="image-file" type="file" />
+                <button class="ui button" type="submit" id="inpFileButton">Upload File</button>
+            </form>
+        </div>
+    </div>
+    <!-- <canvas class="canvasjs-chart-canvas" width="342" height="300" style="position: absolute; -webkit-tap-highlight-color: transparent; user-select: none; cursor: default;"></canvas>
+    <div align="center" id="chartContainer" style="height: 300px; width: 25%;"></div> -->
+</body>
+
+</html>

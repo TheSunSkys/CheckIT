@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Welcome Teacher!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="Logo/halfLogoV1.png">
+    <link rel="stylesheet" type="text/css" href="Semantic-UI-CSS-master/semantic.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="Semantic-UI-CSS-master/semantic.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+        }
+
+        #logo {
+            margin-top: 50px;
+            width: 200px;
+        }
+
+        #add {
+            float: right;
+        }
+
+        #logout {
+            float: right;
+        }
+    </style>
+    <script>
+        var day;
+        var week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        $(document).ready(function () {
+            $("#add").click(function () {
+                $('#addclass-modal')
+                    .modal('setting', 'transition', 'horizontal flip')
+                    .modal('show')
+                    ;
+            });
+            $('.ui.dropdown')
+                .dropdown({
+                    allowAdditions: true
+
+                }).click(function () {
+                    day = $('#day').val();
+                    console.log(day.length);
+                    for (let index = 0; index < week.length; index++) {
+                        $("#" + week[index]).remove();
+                    }
+                    for (let index = 0; index < day.length; index++) {
+                        $("#formadd").append('<div id=' + day[index] + '>' + '<label>' + day[index] + '</label>' + '<div class="two fields" >' +
+                            '<div class="field">' +
+                            '<div class="ui labeled input">' +
+                            '<div class="ui label">' +
+                            'Begin' +
+                            '</div>' +
+                            '<input type="number" name="' + day[index] + 'BeginHours" min="5" max="23" value="5">' +
+                            '<input type="number" name="' + day[index] + 'BeginMin" min="0" max="59" value="30">' +
+                            '</div>' +
+                            '</div>' +
+                            '<div class="field">' +
+                            '<div class="ui labeled input">' +
+                            '<div class="ui label">' +
+                            'End' +
+                            '</div>' +
+                            '<input type="number" min="6" name="' + day[index] + 'EndHours" max="23" value="6">' +
+                            '<input type="number" min="0" max="59" name="' + day[index] + 'EndMin" value="30">' +
+                            '</div>' +
+                            '</div></div>' +
+                            '<label width="200px">Class Room</label>' +
+                            // '<div class="fields">' +
+                            '<input type="text" name="'+day[index]+'Room"placeholder="B4101">' +
+                            // '</div>' +
+                            '</div> '
+
+
+                        );
+                    }
+                })
+                ;
+
+        });
+    </script>
+</head>
+
+<body>
+    <div class="ui container">
+        <div class="ui grid">
+            <div class="eight wide column">
+                <a href="home"><img src="Logo/fullLogoV3.png" id="logo"></a>
+            </div>
+            <div class="eight wide column">
+                <br>
+                <br>
+                <button class="ui inverted red button" onclick="window.location.href='logout'" id="logout"><i
+                        class="sign out alternate icon"></i> Logout</button><br><br><br><br><br>
+                <button class="ui inverted green button" id="add"><i class="clipboard icon"></i> Add class</button>
+            </div>
+            <div class="sixteen wide column">
+                <table class="ui selectable inverted brown table" id="tclass">
+                    <thead>
+                        <tr>
+                            <th>Class ID</th>
+                            <th>Class Name</th>
+                            <th>Class Date/time</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="showclass">
+                        <form action="detail" class="ui form" method="POST" novalidate="novalidate" align="center">
+                            <%- table -%>
+                        </form>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+    <div class="ui large modal" id="addclass-modal">
+        <i class="close icon"></i>
+        <div class="header">
+            <i class="edit outline icon"></i> Register
+        </div>
+        <div class=" content">
+
+            <form class="ui form error" method="POST" action="addclass">
+                <div class="field" id="formadd">
+                    <label>Class ID</label>
+                    <div class="fields">
+                        <input type="text" name="classid" pattern="[0-9]{6}" id="classid" placeholder="204491">
+                    </div>
+                    <label>Class Name</label>
+                    <div class="fields">
+                        <input type="text" name="classname" id="classname" placeholder="COOPERATIVE EDUCATION I">
+                    </div>
+                    <label>Days</label>
+                    <div class="fields">
+                        <div class="field" style="width: 100%">
+                            <select id="day" name="day" multiple="" class="ui dropdown">
+                                <option value="">Select Day</option>
+                                <option value="Sunday">Sunday</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+                <button class="ui button" type="submit">Add Class</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

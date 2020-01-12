@@ -1,0 +1,20 @@
+{
+  "name": "application-name",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "ejs": "^1.0.0",
+    "express": "^3.5.1",
+    "express-myconnection": "^1.0.4",
+    "express-session": "^1.17.0",
+    "jade": "*",
+    "md5": "^2.2.1",
+    "move-file": "^1.2.0",
+    "multer": "^1.4.2",
+    "mysql": "^2.2.0"
+  }
+}

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Welcome Teacher!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="Logo/halfLogoV1.png">
+    <link rel="stylesheet" type="text/css" href="Semantic-UI-CSS-master/semantic.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="Semantic-UI-CSS-master/semantic.min.js"></script>
+    <script src="JS/qrious.js"></script>
+    <script src="JS/qrious.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+        }
+
+        #logo {
+            margin-top: 50px;
+            width: 200px;
+        }
+
+        #edit {
+            float: right;
+        }
+
+        #logout {
+            float: right;
+        }
+
+        #qrcode {
+            width: 300px;
+            height: 60px;
+            font-size: 20px;
+        }
+
+        #genq {
+            text-align: center;
+        }
+
+        #qq {
+            text-align: center;
+        }
+
+        #text {
+            color: black;
+            font-size: 75px;
+        }
+
+        #time {
+            color: black;
+            font-size: 40px;
+        }
+
+        #formadd {
+            color: black;
+        }
+    </style>
+    <script type="text/javascript">
+        var class_id = <%= class_id %>;
+
+        var day;
+        var week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        $(document).ready(function () {
+
+            $("#qrcode").click(function () {
+                var r = confirm("Generate QRcode ?");
+                if (r == true) {
+                    $('#qrcode-modal')
+                        .modal('setting', 'transition', 'horizontal flip')
+                        .modal('show')
+                        ;
+                    makeid(10);
+                } else {
+                    txt = "You pressed Cancel!";
+                }
+
+
+            });
+            $("#qrclose").click(function () {
+                $('#qrcode-modal')
+                    .modal('setting', 'transition', 'horizontal flip')
+                    .modal('hide')
+                    ;
+                clearInterval(b);
+                clearInterval(timer);
+                clearInterval(run);
+
+                // $.post("genqrcode", { qrcode: "close", class_id: class_id}, function (result) {
+                // });
+                $.post("closecheck", { class_id: class_id }, function (result) {
+                });
+                location.reload(true);
+            });
+            $("#stopqrcode").click(function () {
+                $('#qrcode-modal')
+                    .modal('setting', 'transition', 'horizontal flip')
+                    .modal('hide')
+                    ;
+                clearInterval(b);
+                clearInterval(timer);
+                clearInterval(run);
+                // $.post("genqrcode", { qrcode: "close", class_id: class_id}, function (result) {
+                // });
+                $.post("closecheck", { class_id: class_id }, function (result) {
+                });
+                window.location.reload();
+            });
+
+            $("#ctime").hover(function () {
+                $("#ediv").css("display", "block");
+                $('#cid').attr('value', class_id);
+            }, function () {
+                $("#ediv").css("display", "none");
+            });
+            $("#edit").click(function () {
+                $('#edit-modal')
+                    .modal('setting', 'transition', 'horizontal flip')
+                    .modal('show')
+                    ;
+            });
+            // $("#detail_studen").hover(function () {
+            //     $("#detai_std").css("display", "block");
+            //     //$('#cid').attr('value', class_id); การส่งค่า
+            // }, function () {
+            //     $("#detai_std").css("display", "none");
+            // });
+            $('.ui.dropdown')
+                .dropdown({
+                    allowAdditions: true
+                }).click(function () {
+
+                    day = $('#day').val();
+                    console.log(day.length);
+                    for (let index = 0; index < week.length; index++) {
+                        $("#" + week[index]).remove();
+                    }
+                    for (let index = 0; index < day.length; index++) {
+                        $("#formadd").append('<div id=' + day[index] + '>' + '<label>' + day[index] + '</label>' + '<div class="two fields" >' +
+                            '<div class="field">' +
+                            '<div class="ui labeled input">' +
+                            '<div class="ui label">' +
+                            'Begin' +
+                            '</div>' +
+                            '<input type="number" name="' + day[index] + 'BeginHours" min="5" max="23" value="5">' +
+                            '<input type="number" name="' + day[index] + 'BeginMin" min="0" max="59" value="30">' +
+                            '</div>' +
+                            '</div>' +
+                            '<div class="field">' +
+                            '<div class="ui labeled input">' +
+                            '<div class="ui label">' +
+                            'End' +
+                            '</div>' +
+                            '<input type="number" min="6" name="' + day[index] + 'EndHours" max="23" value="6">' +
+                            '<input type="number" min="0" max="59" name="' + day[index] + 'EndMin" value="30">' +
+                            '</div>' +
+                            '</div></div>' +
+                            '<label width="200px">Class Room</label>' +
+                            // '<div class="fields">' +
+                            '<input type="text" name="' + day[index] + 'Room"placeholder="B4101">' +
+                            // '</div>' +
+                            '</div> '
+                        );
+                    }
+                })
+                ;
+        });
+        function check() {
+            console.log($('#qrcode-modal').modal());
+        }
+    </script>
+</head>
+
+<body onclick="check()">
+    <div class="ui container ">
+        <div class="ui grid">
+            <div class="eight wide column">
+                <a href="home"><img src="Logo/fullLogoV3.png" id="logo"></a>
+            </div>
+            <div class="eight wide column">
+                <br>
+                <br>
+                <button class="ui inverted red button" onclick="window.location.href='logout'" id="logout"><i
+                        class="sign out alternate icon"></i> Logout</button><br><br><br><br><br>
+
+            </div>
+            <div class="sixteen wide column">
+                <h1 class="ui horizontal divider header" style="color: white;">
+                    <i class="book icon"></i>
+                    <%- class_id -%>
+                </h1>
+                <h2 align="center"><%- class_name -%>
+                </h2>
+                <h3 class="ui horizontal divider header" style="color: white;">
+                    <i class="bar chart icon"></i>
+                    Details
+                </h3>
+            </div>
+            <div class="three wide column"></div>
+            <div class="ten wide column">
+                <table class="ui definition table selectable">
+                    <tbody>
+                        <tr>
+                            <td class="two wide column">Count student</td>
+                            <td id="detail_studen"><%- count_std -%>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Number of Check</td>
+                            <td><%- count_check -%></td>
+                        </tr>
+                        <tr>
+                            <td>Class Days/Time</td>
+                            <td id="ctime"><%- class_time_html -%><br>
+                                <div style="display: none" id="ediv">
+                                    <br>
+                                    <button class="ui inverted green button" id="edit" style="float: left;"><i
+                                            class="clipboard icon"></i> Edit</button>
+                                </div>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Teacher</td>
+                            <td><%- t_name -%></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="three wide column"></div>
+            <div class="sixteen wide column">
+                <h1 class="ui horizontal divider header" style="color: white;">
+                    <button class="ui inverted yellow button" id="qrcode"><i class="qrcode icon"></i> QR Code
+                        Generator</button>
+                </h1>
+            </div>
+
+
+
+        </div>
+    </div>
+
+
+    <div class="ui large modal" id="qrcode-modal">
+        <div class="header">
+            <i class="qrcode icon"></i> QR Code
+            Generator
+            <i class="close icon" id="qrclose" style="float:right;"></i>
+        </div>
+        <div class=" content">
+            <div id="genq">
+                <div id="qq"></div>
+                <canvas id="qr"></canvas>
+                <h1 id="text"></h1>
+                <div class="ui indicating small progress" id="example2">
+                    <div class="bar"></div>
+                </div>
+                <h5 id="time"></h5>
+                <button class="ui inverted red button" id="stopqrcode" style="font-size: 20px">Stop</button>
+            </div>
+        </div>
+    </div>
+    <div class="ui large modal" id="edit-modal">
+        <i class="close icon"></i>
+        <div class="header">
+            <i class="edit outline icon"></i> Edit Days/Time
+        </div>
+        <div class="content">
+            <form class="ui form error" method="POST" action="editdaystime">
+                <div class="field" id="formadd">
+                    <input type="text" id="cid" name="cid" hidden>
+                    <label>Days</label>
+                    <div class="fields">
+                        <div class="field" style="width: 100%">
+                            <select id="day" name="day" multiple="" class="ui dropdown">
+                                <option value="">Select Day</option>
+                                <option value="Sunday">Sunday</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+                <button class="ui button" type="submit">Edit Days/Time</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        var code = "";
+        var len;
+        b = "";
+        timer = "";
+        run = "";
+        function makeid(length) {
+            console.log(document.getElementById("genq").offsetWidth);
+            $(".button#qrclose").css("width", document.getElementById("genq").offsetWidth / 4)
+            if (b != "" && timer != "" && run != "") {
+                clearInterval(b);
+                clearInterval(timer);
+                clearInterval(run);
+            }
+
+            $('#example2').progress({
+                percent: 100
+            });
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var charactersLength = characters.length;
+            len = length;
+            var time = 10;
+            var bar = 100;
+            $("#countdown").css("width", bar + "%");
+            $("#countdown").css({ "width": bar + "%", "background": "limegreen" });
+            document.getElementById('time').innerHTML = time;
+            b = setInterval(function () {
+                if (bar != 0) {
+
+                    $('#example2').progress({
+                        percent: bar -= 10
+                    });
+                } else {
+                    bar = 100;
+
+                    $('#example2').progress({
+                        percent: bar
+                    });
+
+                }
+
+            }, 1000);
+            timer = setInterval(function () {
+
+                if (time != 0) {
+                    time -= 1;
+                    document.getElementById('time').innerHTML = time;
+                } else {
+                    time = 10;
+                    document.getElementById('time').innerHTML = time;
+                }
+
+
+            }, 1000);
+
+            for (var i = 0; i < len; i++) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            code = result;
+            console.log(code);
+            var qr = new QRious({
+                element: document.getElementById('qr'),
+                value: code,
+                size: document.getElementById("genq").offsetWidth / 1.88,
+                background: 'white',
+                foreground: 'black'
+            })
+            $.post("genqrcode", { qrcode: code, class_id: class_id }, function (result) {
+            });
+            $.post("classround", { class_id: class_id }, function (result) {
+            });
+            close_code(code, class_id);
+            document.getElementById('text').innerHTML = code;
+            run = setInterval(function () {
+                result = "";
+                for (var i = 0; i < len; i++) {
+                    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+                }
+                code = result;
+                console.log(code);
+                var qr = new QRious({
+                    element: document.getElementById('qr'),
+                    value: code,
+                    size: document.getElementById("genq").offsetWidth / 1.88,
+                    background: 'white',
+                    foreground: 'black'
+                })
+                document.getElementById('text').innerHTML = code;
+                $.post("genqrcode", { qrcode: code, class_id: class_id }, function (result) {
+                });
+                close_code(code, class_id);
+            }, 11000);
+
+            return result;
+        }
+        function close_code(code, class_id) {
+            setTimeout(function () {
+                // console.log('hi');
+                $.post("deletecode", { qrcode: code, class_id: class_id }, function (result) {
+                });
+            }, 13000);
+        }
+    </script>
+
+</body>
+
+</html>
