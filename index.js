@@ -495,14 +495,6 @@ app.post("/uploadFile", upload2.single("fileValue"), function(
 ) {
   // console.log(request.file.filename)
   var head = true;
-  //   var no = [];
-  //   var std_id = [];
-  //   var name = [];
-  //   var major = [];
-  //   var group = [];
-  //   var status = [];
-  //   var class_id = [];
-  //   var class_name = [];
   var data = [];
   fs.createReadStream("./client/files/" + request.file.filename)
     .pipe(csv())
@@ -511,24 +503,18 @@ app.post("/uploadFile", upload2.single("fileValue"), function(
       if (head) {
         head = false;
       } else {
-        // for (var i = 0; i < row.length; i++) {
-        //     console.log(row[i]);
-        //   }
         data.push({
-          no: row[0],
           std_id: row[1],
-          name: row[2],
-          major: row[3],
-          group: row[4],
-          status: row[5],
-          class_id: row[6],
-          class_name: row[7]
+          name: row[2]
         });
       }
     })
     .on("end", () => {
       console.log(data);
     });
+
+  // let sqlGetSTD = 'SELECT '
+
   const classID = request.body.classDetail.split(",");
   // console.log(classID)
   let test = "";
@@ -1689,86 +1675,50 @@ app.post("/classround", function(request, response) {
   // var classroundid = request.body.class_id
 });
 
-app.post("/editdaystime", function(request, response) {
-  var day = request.body.day;
-  var beginh = [];
-  var beginm = [];
-  var endh = [];
-  var endm = [];
-  var room = [];
-  var addday = "";
-  // console.log(Array.isArray(day));
-  if (Array.isArray(day)) {
-    for (let index = 0; index < day.length; index++) {
-      beginh.push(day[index] + "BeginHours");
-      beginm.push(day[index] + "BeginMin");
-      endh.push(day[index] + "EndHours");
-      endm.push(day[index] + "EndMin");
-      room.push(day[index] + "Room");
-    }
-    for (let index = 0; index < day.length; index++) {
-      // console.log(request.body,beginh[index]);
-      if (index + 1 == day.length) {
-        addday +=
-          day[index] +
-          " " +
-          request.body[beginh[index]] +
-          ":" +
-          request.body[beginm[index]] +
-          " to " +
-          request.body[endh[index]] +
-          ":" +
-          request.body[endm[index]] +
-          " " +
-          request.body[room[index]].toUpperCase() +
-          " Room:" +
-          request.body[room[index]].toUpperCase();
-      } else {
-        addday +=
-          day[index] +
-          " " +
-          request.body[beginh[index]] +
-          ":" +
-          request.body[beginm[index]] +
-          " to " +
-          request.body[endh[index]] +
-          ":" +
-          request.body[endm[index]] +
-          " " +
-          request.body[room[index]].toUpperCase() +
-          " Room:" +
-          request.body[room[index]].toUpperCase() +
-          " , ";
-      }
-    }
-  } else {
-    beginh.push(day + "BeginHours");
-    beginm.push(day + "BeginMin");
-    endh.push(day + "EndHours");
-    endm.push(day + "EndMin");
-    room.push(day + "Room");
-    addday +=
-      day +
-      " " +
-      request.body[beginh[0]] +
-      ":" +
-      request.body[beginm[0]] +
-      " to " +
-      request.body[endh[0]] +
-      ":" +
-      request.body[endm[0]] +
-      " Room:" +
-      request.body[room[index]].toUpperCase();
-  }
+app.post('/editdaystime', function (request, response) {
 
-  var sql = "UPDATE class_detail SET class_time = ? WHERE class_id = ?";
-  con.query(sql, [addday, request.body.cid], function(error, results, fields) {
-    if (error) throw error;
-    console.log(
-      "Days/Time Class " + request.body.cid + " Change! Day/Time = " + addday
-    );
-    response.redirect("/");
-  });
+    var day = request.body.day;
+    var beginh = [];
+    var beginm = [];
+    var endh = [];
+    var endm = [];
+    var room = [];
+    var addday = "";
+    // console.log(Array.isArray(day));
+    if (Array.isArray(day)) {
+        for (let index = 0; index < day.length; index++) {
+            beginh.push(day[index] + "BeginHours");
+            beginm.push(day[index] + "BeginMin");
+            endh.push(day[index] + "EndHours");
+            endm.push(day[index] + "EndMin");
+            room.push(day[index] + "Room");
+
+        }
+        for (let index = 0; index < day.length; index++) {
+            // console.log(request.body,beginh[index]);
+            if (index + 1 == day.length) {
+                addday += day[index] + " " + request.body[beginh[index]] + ":" + request.body[beginm[index]] + " to " + request.body[endh[index]] + ":" + request.body[endm[index]] + " " + request.body[room[index]].toUpperCase() + " Room:" + request.body[room[index]].toUpperCase();
+            } else {
+                addday += day[index] + " " + request.body[beginh[index]] + ":" + request.body[beginm[index]] + " to " + request.body[endh[index]] + ":" + request.body[endm[index]] + " " + request.body[room[index]].toUpperCase() + " Room:" + request.body[room[index]].toUpperCase() + " , ";
+            }
+        }
+    }
+    else {
+        beginh.push(day + "BeginHours");
+        beginm.push(day + "BeginMin");
+        endh.push(day + "EndHours");
+        endm.push(day + "EndMin");
+        room.push(day + "Room");
+        addday += day + " " + request.body[beginh[0]] + ":" + request.body[beginm[0]] + " to " + request.body[endh[0]] + ":" + request.body[endm[0]] + " Room:" + request.body[room[index]].toUpperCase();
+    }
+
+    var sql = 'UPDATE class_detail SET class_time = ? WHERE class_id = ?';
+    con.query(sql, [addday, request.body.cid], function (error, results, fields) {
+        if (error) throw error;
+        console.log("Days/Time Class " + request.body.cid + " Change! Day/Time = " + addday);
+        response.redirect('/');
+    });
+
 });
 
 app.get("/logout", function(request, response) {

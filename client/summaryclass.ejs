@@ -33,7 +33,7 @@
     <!-- <script src="xlsx.full.min.js"></script>
     <script>
         /* set up XMLHttpRequest */
-        var url = "test.csv";
+        var url = "files/test.csv";
         var oReq = new XMLHttpRequest();
         oReq.open("GET", url, true);
         oReq.responseType = "arraybuffer";
@@ -223,11 +223,12 @@
     <div class="ui tiny modal" id="std_check_modal">
         <i class="close icon"></i>
         <div class="header">
-            <i class="edit outline icon"></i>Add Student
+            <i class="edit outline icon"></i>Check
         </div>
         <div class=" content">
             <form enctype="multipart/form-data" action="/uploadFile" method="post">
-                <input id="image-file" type="file" />
+                <input id="fileValue" name="fileValue" type="file" />
+                <input type="hidden" name="classDetail" id="classDetail" value="<%- class_id -%>,<%- class_name -%>">
                 <button class="ui button" type="submit" id="inpFileButton">Upload File</button>
             </form>
         </div>
