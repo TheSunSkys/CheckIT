@@ -5,7 +5,7 @@ module.exports = {
   user: "itches",
   password: "2525",
   port: 3307,
-  database: "checkitv4"
+  database: "checkitv5"
 };
 
 // module.exports = {

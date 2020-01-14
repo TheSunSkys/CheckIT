@@ -7,6 +7,9 @@
   },
   "dependencies": {
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "csv-parse": "^4.8.5",
+    "deasync": "^0.1.19",
     "ejs": "^1.0.0",
     "express": "^3.5.1",
     "express-myconnection": "^1.0.4",
