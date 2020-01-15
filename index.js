@@ -436,7 +436,7 @@ app.post("/checkpoint", function(request, response) {
           res
         ) {
           if (err) throw err;
-          console.log(res);
+          // console.log(res);
           if (res[0].class_round_status == 0) {
             response.json({ success: false, msg: "Time out!" });
           } else {
@@ -489,38 +489,79 @@ app.post("/checkimg", upload.single("image"), function(request, response) {
   response.json({ success: "true" });
 });
 
-app.post("/uploadFile", upload2.single("fileValue"), function(
-  request,
-  response
-) {
-  // console.log(request.file.filename)
+app.post("/uploadFile", upload2.single("fileValue"), function( request, response) {
+  const classID = request.body.classDetail.split(",");
+  let sqlGetSTD = 'SELECT ccm.c_std_id FROM class_check_member ccm WHERE ccm.class_id = ?'
   var head = true;
-  var data = [];
+  var csvData = [];
+  var databaseData = []
   fs.createReadStream("./client/files/" + request.file.filename)
     .pipe(csv())
     .on("data", row => {
-      //   a = row.split(',');
       if (head) {
         head = false;
       } else {
-        data.push({
+        csvData.push({
           std_id: row[1],
           name: row[2]
         });
       }
     })
     .on("end", () => {
-      console.log(data);
+      con.query(sqlGetSTD, [classID[0]], function(err, response) {
+        response.forEach((ele, i) => {
+          databaseData.push({
+            std_id: ele.c_std_id
+          })
+        })
+        const operation = (databaseData, csvData, isUnion = false) => databaseData.filter( a => isUnion === csvData.some( b => a.std_id === b.std_id ) );
+        const inSecondOnly = (databaseData, csvData) => inFirstOnly(csvData, databaseData)
+        const inFirstOnly = operation
+        const valueFromCheckInCSV = inSecondOnly(databaseData, csvData)
+        let newValue = []
+        if(valueFromCheckInCSV == ''){
+          console.log("valueFromCheck == []")
+        }else{
+          valueFromCheckInCSV.forEach((element) => {
+            let newName = element.name.split(' ')
+            newValue.push({
+              id: element.std_id,
+              fname: newName[1],
+              lname: newName[2]
+            })
+          })
+          newValue.forEach((e) => {
+            // console.log(e)
+            con.query('INSERT INTO class_check_member(c_fname, c_lname, class_id, c_std_id) VALUES(?, ?, ?, ?)', [e.fname, e.lname, classID[0], e.id], function(err, res) {
+              if (err) {
+                throw error
+              } else {
+                console.log("insert new student success", e.id);
+              }
+            })
+          })
+        }
+        const valueFromCheckInDatabase = inFirstOnly(databaseData, csvData)
+        // console.log("valueFromCheckInDatabase", valueFromCheckInDatabase)
+        if(valueFromCheckInDatabase != ''){
+          let sqlUpdate = 'UPDATE class_check_member SET c_status = ? WHERE c_std_id = ?'
+          valueFromCheckInDatabase.forEach((e) => {
+            con.query(sqlUpdate, ['w', e.std_id], function(err, res){
+              if(err){
+                throw err
+              }else{
+                console.log("Update id =", e.std_id)
+              }
+            })
+          })
+        }else{
+          console.log("valueFromCheckInDatabase = []")
+        }
+      })
     });
-
-  // let sqlGetSTD = 'SELECT '
-
-  const classID = request.body.classDetail.split(",");
-  // console.log(classID)
   let test = "";
   let test2 = "";
   let valueToCSV = "";
-  let _status = "";
   let icon = '<i class="exclamation circle icon"></i>';
   con.query(
     "SELECT ccm.c_std_id, ccm.c_fname, ccm.c_lname, ccm.c_status FROM class_check_member ccm WHERE ccm.class_id = ? AND ccm.c_status != ? ORDER BY ccm.c_std_id ASC",
@@ -532,10 +573,13 @@ app.post("/uploadFile", upload2.single("fileValue"), function(
         [classID[0]],
         function(err, res) {
           res.forEach((ele, i) => {
+            let _status = "";
             if (ele.c_status == "n") {
               _status = "Normal";
             } else if (ele.c_status == "d") {
               _status = "Delete";
+            } else if (ele.c_status == "w") {
+              _status = "Withdraw"
             }
             valueToCSV +=
               i +
@@ -552,7 +596,6 @@ app.post("/uploadFile", upload2.single("fileValue"), function(
               valueToCSV += "+";
             }
           });
-          // console.log(valueToCSV)
           if (result == "") {
             test2 += "<h2>" + icon + "No Student In Class</h2>";
             let csv = valueToCSV;
@@ -569,8 +612,10 @@ app.post("/uploadFile", upload2.single("fileValue"), function(
               let status = "";
               if (element.c_status == "n") {
                 status = "Normal";
-              } else if (element.c_status == "r") {
-                status = "Remove";
+              } else if (element.c_status == "d") {
+                status = "Delete";
+              } else if (element.c_status == "w") {
+                status = "Withdraw"
               }
               let no = index + 1;
               let b = classID[0] + "," + element.c_std_id + "," + classID[1];
@@ -600,7 +645,6 @@ app.post("/uploadFile", upload2.single("fileValue"), function(
               test2: test2,
               csv: csv,
               fileName: request.file.filename,
-              data: data
             });
           }
         }
@@ -1090,7 +1134,6 @@ app.post("/summary", (request, response) => {
   let test = "";
   let test2 = "";
   let valueToCSV = "";
-  let _status = "";
   let filename = "";
   let icon = '<i class="exclamation circle icon"></i>';
   // console.log(request.body)
@@ -1113,12 +1156,15 @@ app.post("/summary", (request, response) => {
           "SELECT ccm.c_std_id, ccm.c_fname, ccm.c_lname, ccm.c_status FROM class_check_member AS ccm WHERE ccm.class_id = ?",
           [classID[0]],
           function(err, res) {
-            console.log(res)
+            // console.log(res)
             res.forEach((ele, i) => {
+              let _status = "";
               if (ele.c_status == "n") {
                 _status = "Normal";
               } else if (ele.c_status == "d") {
                 _status = "Delete";
+              } else if (ele.c_status == "w") {
+                _status = "Withdraw"
               }
               valueToCSV += i + 1 + "," + ele.c_std_id + "," + ele.c_fname + " " + ele.c_lname + "," + _status;
               if (i != res.length) {
@@ -1144,8 +1190,10 @@ app.post("/summary", (request, response) => {
                 let status = "";
                 if (element.c_status == "n") {
                   status = "Normal";
-                } else if (element.c_status == "r") {
-                  status = "Remove";
+                } else if (element.c_status == "d") {
+                  status = "Delete";
+                } else if (element.c_status == "w") {
+                  status = "Withdraw"
                 }
                 let no = index + 1;
                 let b = classID[0] + "," + element.c_std_id + "," + classID[1];
@@ -1181,7 +1229,6 @@ app.post("/summary", (request, response) => {
           }
         );
       }
-      // console.log(result)
     }
   );
 });
@@ -1205,10 +1252,13 @@ app.post("/search", (request, response) => {
         [value.class],
         function(err, res) {
           res.forEach((ele, i) => {
+            let _status = ""
             if (ele.c_status == "n") {
               _status = "Normal";
             } else if (ele.c_status == "d") {
               _status = "Delete";
+            } else if (ele.c_status == "w") {
+              _status = "Withdraw"
             }
             valueToCSV +=
               i +
@@ -1243,8 +1293,10 @@ app.post("/search", (request, response) => {
               let status = "";
               if (element.c_status == "n") {
                 status = "Normal";
-              } else if (element.c_status == "r") {
-                status = "Remove";
+              } else if (element.c_status == "d") {
+                status = "Delete";
+              } else if (element.c_status == "w") {
+                _status = "Withdraw"
               }
               let no = index + 1;
               let b =
@@ -1295,6 +1347,8 @@ app.post("/search", (request, response) => {
               _status = "Normal";
             } else if (ele.c_status == "d") {
               _status = "Delete";
+            } else if (ele.c_status == "w") {
+              _status = "Withdraw"
             }
             valueToCSV +=
               i +
@@ -1327,8 +1381,10 @@ app.post("/search", (request, response) => {
               let status = "";
               if (element.c_status == "n") {
                 status = "Normal";
-              } else if (element.c_status == "r") {
-                status = "Remove";
+              } else if (element.c_status == "d") {
+                status = "Delete";
+              } else if (element.c_status == "w") {
+                _status = "Withdraw"
               }
               let no = index + 1;
               let b =
