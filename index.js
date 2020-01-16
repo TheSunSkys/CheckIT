@@ -489,169 +489,6 @@ app.post("/checkimg", upload.single("image"), function(request, response) {
   response.json({ success: "true" });
 });
 
-app.post("/uploadFile", upload2.single("fileValue"), function( request, response) {
-  const classID = request.body.classDetail.split(",");
-  let sqlGetSTD = 'SELECT ccm.c_std_id FROM class_check_member ccm WHERE ccm.class_id = ?'
-  var head = true;
-  var csvData = [];
-  var databaseData = []
-  fs.createReadStream("./client/files/" + request.file.filename)
-    .pipe(csv())
-    .on("data", row => {
-      if (head) {
-        head = false;
-      } else {
-        csvData.push({
-          std_id: row[1],
-          name: row[2]
-        });
-      }
-    })
-    .on("end", () => {
-      con.query(sqlGetSTD, [classID[0]], function(err, response) {
-        response.forEach((ele, i) => {
-          databaseData.push({
-            std_id: ele.c_std_id
-          })
-        })
-        const operation = (databaseData, csvData, isUnion = false) => databaseData.filter( a => isUnion === csvData.some( b => a.std_id === b.std_id ) );
-        const inSecondOnly = (databaseData, csvData) => inFirstOnly(csvData, databaseData)
-        const inFirstOnly = operation
-        const valueFromCheckInCSV = inSecondOnly(databaseData, csvData)
-        let newValue = []
-        if(valueFromCheckInCSV == ''){
-          console.log("valueFromCheck == []")
-        }else{
-          valueFromCheckInCSV.forEach((element) => {
-            let newName = element.name.split(' ')
-            newValue.push({
-              id: element.std_id,
-              fname: newName[1],
-              lname: newName[2]
-            })
-          })
-          newValue.forEach((e) => {
-            // console.log(e)
-            con.query('INSERT INTO class_check_member(c_fname, c_lname, class_id, c_std_id) VALUES(?, ?, ?, ?)', [e.fname, e.lname, classID[0], e.id], function(err, res) {
-              if (err) {
-                throw error
-              } else {
-                console.log("insert new student success", e.id);
-              }
-            })
-          })
-        }
-        const valueFromCheckInDatabase = inFirstOnly(databaseData, csvData)
-        // console.log("valueFromCheckInDatabase", valueFromCheckInDatabase)
-        if(valueFromCheckInDatabase != ''){
-          let sqlUpdate = 'UPDATE class_check_member SET c_status = ? WHERE c_std_id = ?'
-          valueFromCheckInDatabase.forEach((e) => {
-            con.query(sqlUpdate, ['w', e.std_id], function(err, res){
-              if(err){
-                throw err
-              }else{
-                console.log("Update id =", e.std_id)
-              }
-            })
-          })
-        }else{
-          console.log("valueFromCheckInDatabase = []")
-        }
-      })
-    });
-  let test = "";
-  let test2 = "";
-  let valueToCSV = "";
-  let icon = '<i class="exclamation circle icon"></i>';
-  con.query(
-    "SELECT ccm.c_std_id, ccm.c_fname, ccm.c_lname, ccm.c_status FROM class_check_member ccm WHERE ccm.class_id = ? AND ccm.c_status != ? ORDER BY ccm.c_std_id ASC",
-    [classID[0], "d"],
-    function(err, result) {
-      // console.log(result)
-      con.query(
-        "SELECT ccm.c_std_id, ccm.c_fname, ccm.c_lname, ccm.c_status FROM class_check_member AS ccm WHERE ccm.class_id = ?",
-        [classID[0]],
-        function(err, res) {
-          res.forEach((ele, i) => {
-            let _status = "";
-            if (ele.c_status == "n") {
-              _status = "Normal";
-            } else if (ele.c_status == "d") {
-              _status = "Delete";
-            } else if (ele.c_status == "w") {
-              _status = "Withdraw"
-            }
-            valueToCSV +=
-              i +
-              1 +
-              "," +
-              ele.c_std_id +
-              "," +
-              ele.c_fname +
-              " " +
-              ele.c_lname +
-              "," +
-              _status;
-            if (i == 0) {
-              valueToCSV += "+";
-            }
-          });
-          if (result == "") {
-            test2 += "<h2>" + icon + "No Student In Class</h2>";
-            let csv = valueToCSV;
-            return response.render("summaryclass", {
-              test: test,
-              class_id: classID[0],
-              class_name: classID[1],
-              test2: test2,
-              csv: csv
-            });
-          } else {
-            result.forEach((element, index) => {
-              // console.log(element)
-              let status = "";
-              if (element.c_status == "n") {
-                status = "Normal";
-              } else if (element.c_status == "d") {
-                status = "Delete";
-              } else if (element.c_status == "w") {
-                status = "Withdraw"
-              }
-              let no = index + 1;
-              let b = classID[0] + "," + element.c_std_id + "," + classID[1];
-              test += "<tr>";
-              test += "<td>" + no + "</td>";
-              test += "<td>" + element.c_std_id + "</td>";
-              test +=
-                "<td>" + element.c_fname + " " + element.c_lname + "</td>";
-              test += "<td>" + status + "</td>";
-              test +=
-                "<td>" +
-                '<button type="submit" formMethod="post" formAction="stddetail" class="ui inverted black  button" value="' +
-                b +
-                '" id="stddetail" name="stddetail">Detail</button>';
-              test +=
-                '<button type="submit" formMethod="post" formAction="deleteSTD" class="ui inverted black  button" value="' +
-                element.c_std_id +
-                '" id="delete" name="delete">Delete</button></td>';
-              test += "</tr>";
-            });
-            // console.log(test)
-            let csv = valueToCSV;
-            return response.render("summaryclass", {
-              test: test,
-              class_id: classID[0],
-              class_name: classID[1],
-              test2: test2,
-              csv: csv,
-              fileName: request.file.filename,
-            });
-          }
-        }
-      );
-    }
-  );
-});
 
 app.post("/moveimgcheck", function(request, response) {
   // console.log('hi');
@@ -1103,7 +940,7 @@ app.get("/home", function(request, response) {
           text += "<td>" + results[i].class_name + "</td>";
           text += "<td>" + results[i].class_time + "</td>";
           text += '<td><button type="submit" formMethod="post" formAction="selectclass" class="ui inverted black  button" value="' + results[i].class_id + '" id="detail" name="detail">Detail</button>';
-          text += '<button type="submit" formMethod="post" formAction="summary" class="ui inverted black  button" value="' + results[i].class_id + "," + results[i].class_name + '" id="classid" name="classid">Summary</button>';
+          text += '<button type="submit" formMethod="post" formAction="getValueFromHome" class="ui inverted black  button" value="' + results[i].class_id + "," + results[i].class_name + '" id="classid" name="classid">Summary</button>';
           text += '<button type="submit" formMethod="post" formAction="deleteClass" class="ui inverted black  button" value="' + results[i].class_id + '" id="deleteClass" name="deleteClass">Delete</button></td>';
           text += "</tr>";
         }
@@ -1133,105 +970,197 @@ app.post("/deleteClass", (req, res) => {
       console.log("update success")
     }
   })
-  // console.log(sqlUpdateClass, valueUpdate)
 })
 
-app.post("/summary", (request, response) => {
-  const classID = request.body.classid.split(",");
-  // console.log(classID)
-  let test = "";
-  let test2 = "";
-  let valueToCSV = "";
-  let filename = "";
-  let icon = '<i class="exclamation circle icon"></i>';
-  // console.log(request.body)
-  con.query(
-    "SELECT ccm.c_std_id, ccm.c_fname, ccm.c_lname, ccm.c_status FROM class_check_member ccm WHERE ccm.class_id = ? AND ccm.c_status != ? ORDER BY ccm.c_std_id ASC",
-    [classID[0], "d"],
-    function(err, result) {
-      if(result == ""){
-        test2 += "<h2>" + icon + "No Student In Class</h2>";
-        let csv = valueToCSV;
-        return response.render("summaryclass", {
-          test: test,
-          class_id: classID[0],
-          class_name: classID[1],
-          test2: test2,
-          csv: csv,
-          fileName: filename})
-      }else{
-        con.query(
-          "SELECT ccm.c_std_id, ccm.c_fname, ccm.c_lname, ccm.c_status FROM class_check_member AS ccm WHERE ccm.class_id = ?",
-          [classID[0]],
-          function(err, res) {
-            // console.log(res)
-            res.forEach((ele, i) => {
-              let _status = "";
-              if (ele.c_status == "n") {
-                _status = "Normal";
-              } else if (ele.c_status == "d") {
-                _status = "Delete";
-              } else if (ele.c_status == "w") {
-                _status = "Withdraw"
-              }
-              valueToCSV += i + 1 + "," + ele.c_std_id + "," + ele.c_fname + " " + ele.c_lname + "," + _status;
-              if (i != res.length) {
-                valueToCSV += "+";
-              }
-              
+app.get("/summary", (request, response) => {
+  if(request.session.classid){
+    // const classID = request.body.classid.split(",");
+    // console.log(classID)
+    let test = "";
+    let test2 = "";
+    let valueToCSV = "";
+    let filename = "";
+    let icon = '<i class="exclamation circle icon"></i>';
+    console.log(request.session.file)
+    if(request.session.file != undefined){
+      console.log(request.session.file)
+      let sqlGetSTD = 'SELECT ccm.c_std_id FROM class_check_member ccm WHERE ccm.class_id = ?'
+      var head = true;
+      var csvData = [];
+      var databaseData = [];
+      fs.createReadStream("./client/files/" + request.session.file)
+        .pipe(csv())
+        .on("data", row => {
+          if (head) {
+            head = false;
+          } else {
+            csvData.push({
+              std_id: row[1],
+              name: row[2]
             });
-            // console.log(valueToCSV)
-            if (result == "") {
-              test2 += "<h2>" + icon + "No Student In Class</h2>";
-              let csv = valueToCSV;
-              return response.render("summaryclass", {
-                test: test,
-                class_id: classID[0],
-                class_name: classID[1],
-                test2: test2,
-                csv: csv,
-                fileName: filename
-              });
-            } else {
-              result.forEach((element, index) => {
-                // console.log(element)
-                let status = "";
-                if (element.c_status == "n") {
-                  status = "Normal";
-                } else if (element.c_status == "d") {
-                  status = "Delete";
-                } else if (element.c_status == "w") {
-                  status = "Withdraw"
-                }
-                let no = index + 1;
-                let b = classID[0] + "," + element.c_std_id + "," + classID[1];
-                let valueDash = classID[0] + "," + classID[1];
-                test += "<tr>";
-                test += "<td>" + no + "</td>";
-                test += "<td>" + element.c_std_id + "</td>";
-                test += "<td>" + element.c_fname + " " + element.c_lname + "</td>";
-                test += "<td>" + status + "</td>";
-                test += "<td>" + '<button type="submit" formMethod="post" formAction="stddetail" class="ui inverted black  button" value="' + b + '" id="stddetail" name="stddetail">Detail</button>';
-                test += '<button type="submit" formMethod="post" formAction="deleteSTD" class="ui inverted black  button" value="' + element.c_std_id + '" id="delete" name="delete">Delete</button></td>'
-                test += "</tr>";
-              });
-              // console.log(test)
-              let csv = valueToCSV;
-              return response.render("summaryclass", {
-                test: test,
-                class_id: classID[0],
-                class_name: classID[1],
-                test2: test2,
-                csv: csv,
-                fileName: filename,
-                data: ""
-              });
-            }
           }
-        );
-      }
+        })
+        .on("end", () => {
+          con.query(sqlGetSTD, [request.session.classid], function(err, response) {
+            response.forEach((ele, i) => {
+              databaseData.push({
+                std_id: ele.c_std_id
+              })
+            })
+            const operation = (databaseData, csvData, isUnion = false) => databaseData.filter( a => isUnion === csvData.some( b => a.std_id === b.std_id ) );
+            const inSecondOnly = (databaseData, csvData) => inFirstOnly(csvData, databaseData)
+            const inFirstOnly = operation
+            const valueFromCheckInCSV = inSecondOnly(databaseData, csvData)
+            let newValue = []
+            if(valueFromCheckInCSV == ''){
+              console.log("valueFromCheck == []")
+            }else{
+              valueFromCheckInCSV.forEach((element) => {
+                let newName = element.name.split(' ')
+                newValue.push({
+                  id: element.std_id,
+                  fname: newName[1],
+                  lname: newName[2]
+                })
+              })
+              newValue.forEach((e) => {
+                // console.log(e)
+                con.query('INSERT INTO class_check_member(c_fname, c_lname, class_id, c_std_id) VALUES(?, ?, ?, ?)', [e.fname, e.lname, request.session.classid, e.id], function(err, res) {
+                  if (err) {
+                    throw error
+                  } else {
+                    console.log("insert new student success", e.id);
+                  }
+                })
+              })
+            }
+            const valueFromCheckInDatabase = inFirstOnly(databaseData, csvData)
+            // console.log("valueFromCheckInDatabase", valueFromCheckInDatabase)
+            if(valueFromCheckInDatabase != ''){
+              let sqlUpdate = 'UPDATE class_check_member SET c_status = ? WHERE c_std_id = ?'
+              valueFromCheckInDatabase.forEach((e) => {
+                con.query(sqlUpdate, ['w', e.std_id], function(err, res){
+                  if(err){
+                    throw err
+                  }else{
+                    console.log("Update id =", e.std_id)
+                  }
+                })
+              })
+            }else{
+              console.log("valueFromCheckInDatabase = []")
+            }
+          })
+          request.session.file = undefined
+        });
     }
-  );
+    con.query(
+      "SELECT ccm.c_std_id, ccm.c_fname, ccm.c_lname, ccm.c_status FROM class_check_member ccm WHERE ccm.class_id = ? AND ccm.c_status != ? ORDER BY ccm.c_std_id ASC",
+      [request.session.classid, "d"],
+      function(err, result) {
+        if(result == ""){
+          test2 += "<h2>" + icon + "No Student In Class</h2>";
+          let csv = valueToCSV;
+          return response.render("summaryclass", {
+            test: test,
+            class_id: request.session.classid,
+            class_name: request.session.classname,
+            test2: test2,
+            csv: csv,
+            fileName: filename})
+        }else{
+          con.query(
+            "SELECT ccm.c_std_id, ccm.c_fname, ccm.c_lname, ccm.c_status FROM class_check_member AS ccm WHERE ccm.class_id = ?",
+            [request.session.classid],
+            function(err, res) {
+              // console.log(res)
+              res.forEach((ele, i) => {
+                let _status = "";
+                if (ele.c_status == "n") {
+                  _status = "Normal";
+                } else if (ele.c_status == "d") {
+                  _status = "Delete";
+                } else if (ele.c_status == "w") {
+                  _status = "Withdraw"
+                }
+                valueToCSV += i + 1 + "," + ele.c_std_id + "," + ele.c_fname + " " + ele.c_lname + "," + _status;
+                if (i != res.length) {
+                  valueToCSV += "+";
+                }
+                
+              });
+              // console.log(valueToCSV)
+              if (result == "") {
+                test2 += "<h2>" + icon + "No Student In Class</h2>";
+                let csv = valueToCSV;
+                return response.render("summaryclass", {
+                  test: test,
+                  class_id: request.session.classid,
+                  class_name: request.session.classname,
+                  test2: test2,
+                  csv: csv,
+                  fileName: filename
+                });
+              } else {
+                result.forEach((element, index) => {
+                  // console.log(element)
+                  let status = "";
+                  if (element.c_status == "n") {
+                    status = "Normal";
+                  } else if (element.c_status == "d") {
+                    status = "Delete";
+                  } else if (element.c_status == "w") {
+                    status = "Withdraw"
+                  }
+                  let no = index + 1;
+                  let b = request.session.classid + "," + element.c_std_id + "," + request.session.classname;
+                  let valueDash = request.session.classid + "," + request.session.classname;
+                  test += "<tr>";
+                  test += "<td>" + no + "</td>";
+                  test += "<td>" + element.c_std_id + "</td>";
+                  test += "<td>" + element.c_fname + " " + element.c_lname + "</td>";
+                  test += "<td>" + status + "</td>";
+                  test += "<td>" + '<button type="submit" formMethod="post" formAction="getValueFromSummary" class="ui inverted black  button" value="' + b + '" id="stddetail" name="stddetail">Detail</button>';
+                  test += '<button type="submit" formMethod="post" formAction="deleteSTD" class="ui inverted black  button" value="' + element.c_std_id + '" id="delete" name="delete">Delete</button></td>'
+                  test += "</tr>";
+                });
+                // console.log(test)
+                let csv = valueToCSV;
+                return response.render("summaryclass", {
+                  test: test,
+                  class_id: request.session.classid,
+                  class_name: request.session.classname,
+                  test2: test2,
+                  csv: csv,
+                  fileName: filename,
+                  data: ""
+                });
+              }
+            }
+          );
+        }
+      }
+    );
+  }else{
+    console.log("noooooooooooooooo")
+  }
+});
+
+app.post("/getValueFromHome", (request, response) => {
+  const classID = request.body.classid.split(",");
+  request.session.classid = classID[0]
+  request.session.classname = classID[1]
+  if (request.session.classid != undefined) {
+    // console.log(request.session.classid)
+    response.redirect("summary");
+    response.end();
+  }
+})
+
+app.post("/uploadFile", upload2.single("fileValue"), function( request, response) {
+  request.session.file = request.file.filename
+  response.redirect("summary");
+  response.end();
 });
 
 app.post("/search", (request, response) => {
@@ -1427,16 +1356,26 @@ app.post("/search", (request, response) => {
   }
 });
 
-app.post("/stddetail", function(request, response) {
-  // console.log(request.body.stddetail)
+app.post("/getValueFromSummary", (request, response) => {
   let value = request.body.stddetail.split(",");
+  request.session.stdID = value[1]
+  if (request.session.stdID != undefined) {
+    // console.log(request.session.classid)
+    response.redirect("stddetail");
+    response.end();
+  }
+})
+
+app.get("/stddetail", function(request, response) {
+  // console.log(request.body.stddetail)
+  // let value = request.body.stddetail.split(",");
   // console.log(value)
   let test = "";
   let test2 = "";
   let icon = '<i class="exclamation circle icon"></i>';
   con.query(
     'SELECT DATE_FORMAT(c.class_date_check, "%d %M %Y") as class_date_check, c.class_time_check, c.check_address, c.class_round_id, c.p_id, p.p_fname, p.p_lname, c.class_id, cd.class_name FROM class_check c JOIN person p ON p.p_id = c.p_id JOIN class_detail cd ON c.class_id = cd.class_id WHERE c.class_id = ? AND c.p_id = ? ORDER BY c.class_round_id ASC',
-    [value[0], value[1]],
+    [request.session.classid, request.session.stdID],
     function(err, result) {
       // console.log(result)
       if (result == "") {
@@ -1444,10 +1383,10 @@ app.post("/stddetail", function(request, response) {
         test2 += "<h2>" + icon + "No Data</h2>";
         return response.render("stddetail", {
           test: test,
-          class_id: value[0],
-          class_name: value[2],
+          class_id: request.session.classid,
+          class_name: request.session.classname,
           test2: test2,
-          stdID: value[1]
+          stdID: request.session.stdID
         });
       } else {
         // console.log("result2")
@@ -1470,10 +1409,10 @@ app.post("/stddetail", function(request, response) {
         });
         return response.render("stddetail", {
           test: test,
-          class_id: value[0],
-          class_name: value[2],
+          class_id: request.session.classid,
+          class_name: request.session.classname,
           test2: test2,
-          stdID: value[1]
+          stdID: request.session.stdID
         });
       }
     }
@@ -1481,7 +1420,7 @@ app.post("/stddetail", function(request, response) {
 });
 
 app.post("/addSTD", (request, response) => {
-  console.log(request.body)
+  // console.log(request.body)
   let req = request.body;
   let sql =
     "INSERT INTO class_check_member(c_fname, c_lname, class_id,c_std_id) VALUES(?, ?, ?, ?)";
@@ -1498,12 +1437,14 @@ app.post("/addSTD", (request, response) => {
       console.log("id is repeatedly");
     } else {
       console.log("insert new student success");
+      response.redirect("summary")
+      response.end();
     }
   });
 });
 
 app.post("/deleteSTD", (request, response) => {
-  console.log(request.body);
+  // console.log(request.body);
   let req = request.body;
   let sql = "DELETE FROM class_check_member WHERE c_std_id = ?";
   const value = [req.delete];
@@ -1511,8 +1452,9 @@ app.post("/deleteSTD", (request, response) => {
     if(err){
       throw err
     }else{
-      console.log("delete", req.delete);
-      response.redirect("/")
+      // console.log("delete", req.delete);
+      response.redirect("summary")
+      response.end();
     }
   });
 });
@@ -1785,13 +1727,60 @@ app.post('/editdaystime', function (request, response) {
 
 });
 
-app.post("/dashboard", (req, res) => {
+app.get("/dashboard", (request, response) => {
   // console.log(req.body)
-  const valueFromSummary = req.body.dashboard.split(',')
-  const classID = valueFromSummary[0]
-  const className = valueFromSummary[1]
-  // console.log(classID, className)
-  return res.render("dashboard", { class_id: classID, class_name: className });
+  const classID = request.session.classid
+  const className = request.session.classname
+  let sqlCountAll = 'select count(c_std_id) as countStd from class_check_member where class_id = ?'
+  let sqlCountWithdraw = 'select count(c_std_id) as countWith from class_check_member where class_id = ? and c_status = ?'
+  let sqlBar = 'SELECT count(p_id) as countSTD, DATE_FORMAT(MAX(class_date_check), "%d %M %Y") AS Date FROM class_check where class_id = ? GROUP BY class_date_check LIMIT 5'
+
+  let countAll = 0
+  let countWithdraw = 0
+  let countNormal = 0
+  let arrBarValue = []
+  let arrBarName = []
+  con.query(sqlCountAll, [classID], (err, res) => {
+    if(err){
+      throw err
+    }else{
+      countAll = res[0].countStd
+      // console.log(countAll)
+      con.query(sqlCountWithdraw, [classID, 'w'], (err, res) => {
+        if(err){
+          throw err
+        }else{
+          countWithdraw = res[0].countWith
+          // console.log(countWithdraw)
+          con.query(sqlCountWithdraw, [classID, 'n'], (err, resp) => {
+            if(err){
+              throw err
+            }else{
+              countNormal = resp[0].countWith
+              // console.log(countNormal)
+              con.query(sqlBar, [classID], (error, responseValue) => {
+                if(error){
+                  throw error
+                }else{
+                  responseValue.forEach((ele) => {
+                    arrBarValue.push(ele.countSTD)
+                    arrBarName.push(ele.Date)
+                  })
+                  // console.log(arrBarValue)
+                  // console.log(arrBarName)
+                  return response.render("dashboard", { class_id: classID, class_name: className, countAll: countAll, countWithdraw: countWithdraw, countNormal: countNormal, arrBarValue: arrBarValue, arrBarName: arrBarName});
+                }
+              })
+            }
+          })
+        }
+      })
+    }
+  })
+})
+
+app.post("/getValueDashboard", (request, response) => {
+  
 })
 
 app.post("/dashboardSTD", (req, response) => {

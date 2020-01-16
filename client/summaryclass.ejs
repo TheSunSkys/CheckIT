@@ -45,29 +45,40 @@
             })
         });
     </script>
-        <script>
-            function download_csv() {
-                data = document.getElementById("csv").value;
-                let a = []
-                var array = data.split("+")
-                array.forEach(element => {
-                    let valueSplit = element.split(",")
-                    a.push(valueSplit)
-                });
-                console.log(a)
-                var csv = 'No,ID,Name,Status\n';
-                a.forEach(function(row) {
-                        csv += row.join(',');
-                        csv += "\n";
-                });
-            
-                var hiddenElement = document.createElement('a');
-                hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
-                hiddenElement.target = '_blank';
-                hiddenElement.download = document.getElementById("class_ID").value + "_" + document.getElementById("class_NAME").value + 'list_of_students.csv';
-                hiddenElement.click();
-            }
-        </script>
+    <script>
+        function download_csv() {
+            data = document.getElementById("csv").value;
+            let a = []
+            var array = data.split("+")
+            array.forEach(element => {
+                let valueSplit = element.split(",")
+                a.push(valueSplit)
+            });
+            console.log(a)
+            var csv = 'No,ID,Name,Status\n';
+            a.forEach(function(row) {
+                    csv += row.join(',');
+                    csv += "\n";
+            });
+        
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = document.getElementById("class_ID").value + "_" + document.getElementById("class_NAME").value + 'list_of_students.csv';
+            hiddenElement.click();
+        }
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function(){
+        $("#seach_value").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#showclass tr").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+        });
+    </script>
 </head>
 
 <body>
@@ -108,8 +119,8 @@
                                 <button class="ui inverted green button" onclick="download_csv()">CSV</button>
                             </td>
                             <td>
-                                <form method="POST" action="dashboard">
-                                    <button class="ui inverted green button" type="submit" formMethod="POST" formAction="dashboard" value="<%- class_id -%>, <%- class_name -%>" id="dashboard" name="dashboard">Dashboard</button>
+                                <form method="get" action="dashboard">
+                                    <button class="ui inverted green button" type="submit" >Dashboard</button>
                                 </form>
                             </td>
                         </tr>
