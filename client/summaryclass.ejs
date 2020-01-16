@@ -29,36 +29,6 @@
             float: right;
         }
     </style>
-    <!-- about excel file -->
-    <!-- <script src="xlsx.full.min.js"></script>
-    <script>
-        /* set up XMLHttpRequest */
-        var url = "files/test.csv";
-        var oReq = new XMLHttpRequest();
-        oReq.open("GET", url, true);
-        oReq.responseType = "arraybuffer";
-        
-        oReq.onload = function(e) {
-            var arraybuffer = oReq.response;
-            
-            /* convert data to binary string */
-            var data = new Uint8Array(arraybuffer);
-            var arr = new Array();
-            for(var i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
-            var bstr = arr.join("");
-            
-            /* Call XLSX */
-            var workbook = XLSX.read(bstr, {type:"binary"});
-            
-            /* DO SOMETHING WITH workbook HERE */
-            var first_sheet_name = workbook.SheetNames[0];
-            /* Get worksheet */
-            var worksheet = workbook.Sheets[first_sheet_name];
-            console.log(XLSX.utils.sheet_to_json(worksheet,{raw:true}));
-        }
-        
-        oReq.send();
-    </script> -->
     <script>
         $(document).ready(function () {
             $("#addstd").click(function () {
@@ -75,31 +45,6 @@
             })
         });
     </script>
-
-    <!-- Pie Chat -->
-    <!-- <script>
-        window.onload = function() {
-        
-        var chart = new CanvasJS.Chart("chartContainer", {
-            animationEnabled: true,
-            title: {
-                text: "Desktop Search Engine Market Share - 2016"
-            },
-            data: [{
-                type: "pie",
-                startAngle: 240,
-                yValueFormatString: "##0.00\"%\"",
-                indexLabel: "{label} {y}",
-                dataPoints: [
-                    {y: 80, label: "Google"},
-                    {y: 20, label: "Bing"}
-                ]
-            }]
-        });
-        chart.render();
-        
-        }
-    </script> -->
         <script>
             function download_csv() {
                 data = document.getElementById("csv").value;
@@ -150,16 +95,27 @@
                 <input type="hidden" id="class_NAME" value="<%- class_name -%>">
                 <h3 class="ui horizontal divider header" style="color: white;">
                     <i class="bar chart icon"></i>
-                    Details
+                    Studenr Lists
                 </h3>
             </div>
             <div class="sixteen wide column">
                 <div align="right">
-                    <button class="ui inverted green button" id="addstd" name="addstd">Add Student</button>
-                    <button class="ui inverted green button" id="checkSTD" name="checkSTD">Check Student</button>
-                    <button class="ui inverted green button" onclick="download_csv()">CSV</button>
+                    <table>
+                        <tr>
+                            <td>
+                                <button class="ui inverted green button" id="addstd" name="addstd">Add Student</button>
+                                <button class="ui inverted green button" id="checkSTD" name="checkSTD">Check Student</button>
+                                <button class="ui inverted green button" onclick="download_csv()">CSV</button>
+                            </td>
+                            <td>
+                                <form method="POST" action="dashboard">
+                                    <button class="ui inverted green button" type="submit" formMethod="POST" formAction="dashboard" value="<%- class_id -%>, <%- class_name -%>" id="dashboard" name="dashboard">Dashboard</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </table>
                     <input type="hidden" id="csv" name="csv" value="<%- csv -%>">
-                    <br><br>
+                    <br>
                     <form class="ui form error" method="POST" action="search">
                         <div class="ui action input" style="width: 30%;">
                             <input type="text" name="seach_value" id="seach_value" placeholder="Search...">
@@ -233,8 +189,6 @@
             </form>
         </div>
     </div>
-    <!-- <canvas class="canvasjs-chart-canvas" width="342" height="300" style="position: absolute; -webkit-tap-highlight-color: transparent; user-select: none; cursor: default;"></canvas>
-    <div align="center" id="chartContainer" style="height: 300px; width: 25%;"></div> -->
 </body>
 
 </html>

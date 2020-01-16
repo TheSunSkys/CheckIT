@@ -1094,7 +1094,7 @@ app.get("/home", function(request, response) {
   } else if (request.session.loggedin == "teacher") {
     var text = "";
     con.query(
-      "SELECT * FROM class_detail WHERE p_id = ?",
+      "SELECT * FROM class_detail WHERE p_id = ? and status = 'a'",
       [request.session.username],
       function(error, results, fields) {
         for (var i = 0; i < results.length; i++) {
@@ -1102,16 +1102,9 @@ app.get("/home", function(request, response) {
           text += "<td>" + results[i].class_id + "</td>";
           text += "<td>" + results[i].class_name + "</td>";
           text += "<td>" + results[i].class_time + "</td>";
-          text +=
-            '<td><button type="submit" formMethod="post" formAction="selectclass" class="ui inverted black  button" value="' +
-            results[i].class_id +
-            '" id="detail" name="detail">Detail</button>';
-          text +=
-            '<button type="submit" formMethod="post" formAction="summary" class="ui inverted black  button" value="' +
-            results[i].class_id +
-            "," +
-            results[i].class_name +
-            '" id="classid" name="classid">Summary</button></td>';
+          text += '<td><button type="submit" formMethod="post" formAction="selectclass" class="ui inverted black  button" value="' + results[i].class_id + '" id="detail" name="detail">Detail</button>';
+          text += '<button type="submit" formMethod="post" formAction="summary" class="ui inverted black  button" value="' + results[i].class_id + "," + results[i].class_name + '" id="classid" name="classid">Summary</button>';
+          text += '<button type="submit" formMethod="post" formAction="deleteClass" class="ui inverted black  button" value="' + results[i].class_id + '" id="deleteClass" name="deleteClass">Delete</button></td>';
           text += "</tr>";
         }
         // console.log(results);
@@ -1127,6 +1120,21 @@ app.get("/home", function(request, response) {
   }
   // response.end();
 });
+
+app.post("/deleteClass", (req, res) => {
+  const classID = req.body.deleteClass
+  let sqlUpdateClass = 'UPDATE class_detail SET status = ? WHERE class_id = ?'
+  let valueUpdate = [ 'd', classID]
+  con.query(sqlUpdateClass, valueUpdate ,(err, result) => {
+    if(err){
+      throw err
+    }else{
+      res.redirect("/");
+      console.log("update success")
+    }
+  })
+  // console.log(sqlUpdateClass, valueUpdate)
+})
 
 app.post("/summary", (request, response) => {
   const classID = request.body.classid.split(",");
@@ -1197,21 +1205,14 @@ app.post("/summary", (request, response) => {
                 }
                 let no = index + 1;
                 let b = classID[0] + "," + element.c_std_id + "," + classID[1];
+                let valueDash = classID[0] + "," + classID[1];
                 test += "<tr>";
                 test += "<td>" + no + "</td>";
                 test += "<td>" + element.c_std_id + "</td>";
-                test +=
-                  "<td>" + element.c_fname + " " + element.c_lname + "</td>";
+                test += "<td>" + element.c_fname + " " + element.c_lname + "</td>";
                 test += "<td>" + status + "</td>";
-                test +=
-                  "<td>" +
-                  '<button type="submit" formMethod="post" formAction="stddetail" class="ui inverted black  button" value="' +
-                  b +
-                  '" id="stddetail" name="stddetail">Detail</button>';
-                test +=
-                  '<button type="submit" formMethod="post" formAction="deleteSTD" class="ui inverted black  button" value="' +
-                  element.c_std_id +
-                  '" id="delete" name="delete">Delete</button></td>';
+                test += "<td>" + '<button type="submit" formMethod="post" formAction="stddetail" class="ui inverted black  button" value="' + b + '" id="stddetail" name="stddetail">Detail</button>';
+                test += '<button type="submit" formMethod="post" formAction="deleteSTD" class="ui inverted black  button" value="' + element.c_std_id + '" id="delete" name="delete">Delete</button></td>'
                 test += "</tr>";
               });
               // console.log(test)
@@ -1296,7 +1297,7 @@ app.post("/search", (request, response) => {
               } else if (element.c_status == "d") {
                 status = "Delete";
               } else if (element.c_status == "w") {
-                _status = "Withdraw"
+                status = "Withdraw"
               }
               let no = index + 1;
               let b =
@@ -1445,7 +1446,8 @@ app.post("/stddetail", function(request, response) {
           test: test,
           class_id: value[0],
           class_name: value[2],
-          test2: test2
+          test2: test2,
+          stdID: value[1]
         });
       } else {
         // console.log("result2")
@@ -1470,7 +1472,8 @@ app.post("/stddetail", function(request, response) {
           test: test,
           class_id: value[0],
           class_name: value[2],
-          test2: test2
+          test2: test2,
+          stdID: value[1]
         });
       }
     }
@@ -1502,10 +1505,15 @@ app.post("/addSTD", (request, response) => {
 app.post("/deleteSTD", (request, response) => {
   console.log(request.body);
   let req = request.body;
-  let sql = "UPDATE class_check_member SET c_status = ? WHERE c_std_id = ?";
-  const value = ["d", req.delete];
+  let sql = "DELETE FROM class_check_member WHERE c_std_id = ?";
+  const value = [req.delete];
   con.query(sql, value, function(err, result) {
-    console.log("delete", req.delete);
+    if(err){
+      throw err
+    }else{
+      console.log("delete", req.delete);
+      response.redirect("/")
+    }
   });
 });
 
@@ -1776,6 +1784,108 @@ app.post('/editdaystime', function (request, response) {
     });
 
 });
+
+app.post("/dashboard", (req, res) => {
+  // console.log(req.body)
+  const valueFromSummary = req.body.dashboard.split(',')
+  const classID = valueFromSummary[0]
+  const className = valueFromSummary[1]
+  // console.log(classID, className)
+  return res.render("dashboard", { class_id: classID, class_name: className });
+})
+
+app.post("/dashboardSTD", (req, response) => {
+  // console.log(req.body)
+  const valueFromSummary = req.body.dashboard.split(',')
+  const classID = valueFromSummary[0]
+  const className = valueFromSummary[1]
+  const stdID = valueFromSummary[2]
+  let day = '<option selected=\"selected\" value\"all\">All</option>'
+
+  let sqlSelectCountClass = 'select count(class_id) as class from class_check where class_id = ?'
+  let sqlSelectCountSTD = 'select count(p_id) as std from class_check where class_id = ? and p_id = ?'
+  let sqlSelectDay = 'select DISTINCT DATE_FORMAT(class_date_check, "%M %d %Y") as date from class_check where class_id = ?'
+  con.query(sqlSelectCountClass, [classID], (err, res) => {
+    let inClass = 0
+    let outClass = 0
+    if(err){
+      throw err
+    }else{
+      // console.log(res[0].class)
+    }
+    con.query(sqlSelectCountSTD, [classID, stdID], (err, res2) => {
+      if(err){
+        throw err
+      }else{
+        inClass = ((res2[0].std) / res[0].class) *100
+        outClass = 100 - inClass
+      }
+      con.query(sqlSelectDay , [classID], (err, res3) => {
+        if(err){
+          throw err
+        }else if(res3[0]==""){
+          console.log("res3 == []")
+        }else{
+          res3.forEach((element) => {
+            day += '<option value="' + element.date + '">' + element.date + '</option>'
+          })
+        }
+        // console.log(day)
+        return response.render("dashboardSTD", { class_id: classID, class_name: className, stdID: stdID, outClass: outClass, inClass: inClass, selectDay: day });
+      })
+    })
+  })
+})
+
+app.post("/searchDashboardSTD", function(request, response) {
+  const reqValue = request.body
+  const ddValue = reqValue.dropdownValue
+  const className = reqValue.class_name
+  const classID = reqValue.class_id
+  const stdID = reqValue.stdID
+  let day = '<option selected=\"selected\" value\"all\">All</option>'
+  let sqlSelectCountClass = 'select count(class_id) as class from class_check where class_id = ?'
+  let sqlSelectCountSTD = 'select count(p_id) as std from class_check where class_id = ? and p_id = ?'
+  let sqlSelectDay = 'select DISTINCT DATE_FORMAT(class_date_check, "%M %d %Y") as date from class_check where class_id = ?'
+  let valueSelectDay = [classID]
+  let valueSelectCountSTD = [classID, stdID]
+  if(ddValue != 'All'){
+    sqlSelectCountClass += ' and DATE_FORMAT(class_date_check, "%M %d %Y") = ?'
+    sqlSelectCountSTD += ' and DATE_FORMAT(class_date_check, "%M %d %Y") = ?'
+    valueSelectDay.push(ddValue)
+    valueSelectCountSTD.push(ddValue)
+  }
+  con.query(sqlSelectCountClass, valueSelectDay, (err, res) => {
+    let inClass = 0
+    let outClass = 0
+    if(err){
+      throw err
+    }else{
+      con.query(sqlSelectCountSTD, valueSelectCountSTD, (err, res2) => {
+        if(err){
+          throw err
+        }else{
+          inClass = ((res2[0].std) / res[0].class) *100
+          outClass = 100 - inClass
+          // console.log(inClass, outClass)
+        }
+        con.query(sqlSelectDay , [classID], (err, res3) => {
+          if(err){
+            throw err
+          }else if(res3[0]==""){
+            console.log("res3 == []")
+          }else{
+            res3.forEach((element) => {
+              day += '<option value="' + element.date + '">' + element.date + '</option>'
+            })
+          }
+          // console.log(day)
+          return response.render("dashboardSTD", { class_id: classID, class_name: className, stdID: stdID, outClass: outClass, inClass: inClass, selectDay: day });
+        })
+      })
+    }
+  })
+})
 
 app.get("/logout", function(request, response) {
   request.session.destroy();

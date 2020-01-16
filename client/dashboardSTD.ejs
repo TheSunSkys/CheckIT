@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Welcome Teacher!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="Logo/halfLogoV1.png">
+    <link rel="stylesheet" type="text/css" href="Semantic-UI-CSS-master/semantic.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="Semantic-UI-CSS-master/semantic.min.js"></script>
+    <style>
+
+        body {
+            background-color: black;
+        }
+
+        #logo {
+            margin-top: 50px;
+            width: 200px;
+        }
+
+        #add {
+            float: right;
+        }
+
+        #logout {
+            float: right;
+        }
+    </style>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    <script>
+        CanvasJS.addColorSet("colorPie",
+                [
+                "#ff0000",
+                "#3944bc"               
+                ]);
+        window.onload = function() {
+            let outClass = document.getElementById("outClass").value
+            let inClass = document.getElementById("inClass").value
+            console.log(outClass, inClass)
+            var chart = new CanvasJS.Chart("chartContainer", {
+                colorSet: "colorPie",
+                animationEnabled: true,
+                data: [{
+                    type: "pie",
+                    startAngle: 240,
+                    yValueFormatString: "##0.00\"%\"",
+                    indexLabel: "{label} {y}",
+                    dataPoints: [
+                        {y: outClass, label: "Out Class"},
+                        {y: inClass, label: "In Class"}
+                    ]
+                }],
+                backgroundColor: "#000000"
+            });
+        chart.render();
+        }
+        </script>
+</head>
+<body>
+    <div class="ui container">
+        <div class="ui grid">
+            <div class="eight wide column">
+                <a href="home"><img src="Logo/fullLogoV3.png" id="logo"></a>
+            </div>
+            <div class="eight wide column">
+                <br>
+                <br>
+                <button class="ui inverted red button" onclick="window.location.href='logout'" id="logout"><i
+                        class="sign out alternate icon"></i> Logout</button><br><br><br><br><br>
+            </div>
+            <div class="sixteen wide column">
+                <h1 class="ui horizontal divider header" style="color: white;">
+                    <i class="book icon"></i>
+                    <%- class_id -%>
+                </h1>
+                <input type="hidden" id="inClass" name="inClass" value="<%- inClass -%>">
+                <input type="hidden" id="outClass" name="outClass" value="<%- outClass -%>">
+                <h2 align="center" style="color: white;">
+                    <%- class_name -%>
+                </h2>
+                <h3 class="ui horizontal divider header" style="color: white;">
+                    <i class="bar chart icon"></i>
+                    Attend class
+                </h3>
+            </div>
+            <div class="sixteen wide column">
+                <div align="right">
+                    <form method="POST" action="stddetail">
+                        <button class="ui inverted green button" type="submit"value="<%- class_id -%>,<%- stdID -%>,<%- class_name -%>" id="stddetail" name="stddetail">Student Lists</button>
+                    </form>
+                    <br>
+                    <form class="ui form error" method="POST" action="searchDashboardSTD">
+                        <div class="ui action input" style="width: 20%;">
+                            <select class="ui search dropdown" id="dropdownValue" name="dropdownValue">
+                                <%- selectDay %>
+                            </select>
+                        </div>
+                        <input type="hidden" id="class_id" name="class_id" value="<%- class_id %>">
+                        <input type="hidden" id="class_name" name="class_name" value="<%- class_name -%>">
+                        <input type="hidden" id="stdID" name="stdID" value="<%- stdID -%>">
+                        <button class="ui button" type="submit">Search</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <br>
+        <div align="center">
+            <div id="chartContainer" style="height: 300px; width: 70%;"></div>
+        </div>
+    </div>
+</body>
+</html>
