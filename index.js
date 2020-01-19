@@ -898,37 +898,78 @@ app.post("/addclass", function(request, response) {
     // });
   });
 });
+app.post("/deleteTEACHER", (req, res) => {
+  console.log(req.body)
+  const id = req.body.delete
+  con.query("update person set p_status = 'r' where p_id = ?", id, (err, result) => {
+    if(err){
+      throw err
+    }else{
+      res.redirect("home");
+      res.end();
+    }
+  })
+})
+
 app.get("/home", function(request, response) {
   console.log(request.session.loggedin);
-  if (request.session.loggedin == "student") {
-    var text = "";
-    con.query(
-      "SELECT cd.* from class_member c right join class cd on c.class_id = cd.class_id where p_id = ?",
-      [request.session.username],
-      function(error, results, fields) {
-        if (results) {
+  let text = ""
+  if(request.session.loggedin == "master"){
+    con.query("SELECT p_fname, p_lname, p_id, p_email, p_tel from person where p_status = ?", ['t'], function(error, results){
+      if(error){
+        throw error
+      }else{
+        if(results.length){
+          // console.log(results)
           for (var i = 0; i < results.length; i++) {
             text += "<tr>";
-            text += "<td>" + results[i].class_id + "</td>";
-            text += "<td>" + results[i].class_name + "</td>";
-            text += "<td>" + results[i].class_time + "</td>";
+            text += "<td>" + (i + 1) + "</td>";
+            text += "<td>" + results[i].p_fname + " " + results[i].p_lname + "</td>";
+            text += "<td>" + results[i].p_id + "</td>";
+            text += "<td>" + results[i].p_email + "</td>";
+            text += "<td>" + results[i].p_tel + "</td>";
             text +=
-              '<td><button class="ui inverted black  button" value="' +
-              results[i].class_id +
-              '" id="detail' +
-              results[i].class_id +
-              '" name="detail">Detail</button></td>';
+              '<td><button class="ui inverted black  button" type="submit" formMethod="post" formAction="deleteTEACHER" value="' +
+              results[i].p_id + '" id="delete" name="delete">Delete</button></td>';
             text += "</tr>";
           }
-          // console.log(text);
-          // text = results[0].class_id;
+          return response.render("homeadmin", { table: text });
+        }else{
+          console.log(results.length)
         }
-        return response.render("homest", { table: text });
       }
-    );
-    // response.send('Welcome student, ' + request.session.username + '! <br> <button class="ui button" onclick="window.location.href=\'logout\'">Logout</button>');
-  } else if (request.session.loggedin == "teacher") {
-    var text = "";
+    })
+  } 
+  // else if (request.session.loggedin == "student") {
+  //   let text = "";
+  //   con.query(
+  //     "SELECT cd.* from class_member c right join class cd on c.class_id = cd.class_id where p_id = ?",
+  //     [request.session.username],
+  //     function(error, results, fields) {
+  //       if (results) {
+  //         for (var i = 0; i < results.length; i++) {
+  //           text += "<tr>";
+  //           text += "<td>" + results[i].class_id + "</td>";
+  //           text += "<td>" + results[i].class_name + "</td>";
+  //           text += "<td>" + results[i].class_time + "</td>";
+  //           text +=
+  //             '<td><button class="ui inverted black  button" value="' +
+  //             results[i].class_id +
+  //             '" id="detail' +
+  //             results[i].class_id +
+  //             '" name="detail">Detail</button></td>';
+  //           text += "</tr>";
+  //         }
+  //         // console.log(text);
+  //         // text = results[0].class_id;
+  //       }
+  //       return response.render("homest", { table: text });
+  //     }
+  //   );
+  //   // response.send('Welcome student, ' + request.session.username + '! <br> <button class="ui button" onclick="window.location.href=\'logout\'">Logout</button>');
+  // } 
+  else if (request.session.loggedin == "teacher") {
+    let text = "";
     con.query(
       "SELECT * FROM class_detail WHERE p_id = ? and status = 'a'",
       [request.session.username],
@@ -967,6 +1008,30 @@ app.get("/home", function(request, response) {
   }
   // response.end();
 });
+
+app.post("/editTeacher", (req, res) =>{
+
+})
+
+app.post("/addTEACHER", (req, res) => {
+  // console.log(req.body)
+  const pID = req.body.username
+  const fname = req.body.fName
+  const lname = req.body.lName
+  const password = md5(req.body.password)
+  const phone = req.body.phone
+  const mail = req.body.mail
+  const sqlAddTeacher = 'INSERT INTO person VALUES(?, ?, ?, ?, ?, ?, ?, ?)'
+  let valueAdd = [pID, password, fname, lname, phone, mail, "default", "t"]
+  con.query(sqlAddTeacher, valueAdd, (err, result) => {
+    if (err) {
+      throw err;
+    } else {
+      res.redirect("home");
+      res.end();
+    }
+  });
+})
 
 app.post("/deleteClass", (req, res) => {
   const classID = req.body.deleteClass;
@@ -1097,92 +1162,109 @@ app.get("/summary", (request, response) => {
             "SELECT ccm.c_std_id, ccm.c_fname, ccm.c_lname, ccm.c_status FROM class_check_member AS ccm WHERE ccm.class_id = ?",
             [request.session.classid],
             function(err, res) {
-              // console.log(res)
-              res.forEach((ele, i) => {
-                let _status = "";
-                if (ele.c_status == "n") {
-                  _status = "Normal";
-                } else if (ele.c_status == "d") {
-                  _status = "Delete";
-                } else if (ele.c_status == "w") {
-                  _status = "Withdraw";
+              con.query("select count(class_id) as countClassq from class_round where class_id = ?", [request.session.classid], function(err, resCountClass){
+                if(err){
+                  throw err
+                }else{
+                  let countClass = resCountClass[0].countClassq
+                  con.query("select p_id, count(p_id) as countSTDq from class_check where class_id = ? group by p_id ORDER BY p_id ASC", [request.session.classid], function(error, resCountSTD) {
+                    if(error){
+                      throw error
+                    }else{
+                      let countValue = []
+                      if(resCountSTD.length == 0){
+                        countValue.push(0)
+                        console.log("resCountSTD", countValue)
+                      }else{
+                        resCountSTD.forEach((e) => {
+                          countValue.push(((e.countSTDq/countClass)* 100).toFixed(2))
+                        })
+                        // console.log("resCountSTD", countValue)
+                      }
+                      // console.log(res)
+                      res.forEach((ele, i) => {
+                        let _status = "";
+                        if (ele.c_status == "n") {
+                          _status = "Normal";
+                        } else if (ele.c_status == "d") {
+                          _status = "Delete";
+                        } else if (ele.c_status == "w") {
+                          _status = "Withdraw";
+                        }
+                        if(countValue[i] == undefined){
+                          valueToCSV += i + 1 + "," + ele.c_std_id + "," + ele.c_fname + " " + ele.c_lname + "," + _status + ",0%,0%";
+                        }else{
+                          valueToCSV += i + 1 + "," + ele.c_std_id + "," + ele.c_fname + " " + ele.c_lname + "," + _status + "," + countValue[i] + "%," + (100 - countValue[i]) + "%";
+                        }
+                        if (i != res.length) {
+                          valueToCSV += "+";
+                        }
+                      });
+                      // console.log(valueToCSV)
+                      if (result == "") {
+                        test2 += "<h2>" + icon + "No Student In Class</h2>";
+                        let csv = valueToCSV;
+                        return response.render("summaryclass", {
+                          test: test,
+                          class_id: request.session.classid,
+                          class_name: request.session.classname,
+                          test2: test2,
+                          csv: csv,
+                          fileName: filename
+                        });
+                      } else {
+                        result.forEach((element, index) => {
+                          // console.log(element)
+                          let status = "";
+                          if (element.c_status == "n") {
+                            status = "Normal";
+                          } else if (element.c_status == "d") {
+                            status = "Delete";
+                          } else if (element.c_status == "w") {
+                            status = "Withdraw";
+                          }
+                          let no = index + 1;
+                          let b =
+                            request.session.classid +
+                            "," +
+                            element.c_std_id +
+                            "," +
+                            request.session.classname;
+                          let valueDash =
+                            request.session.classid + "," + request.session.classname;
+                          test += "<tr>";
+                          test += "<td>" + no + "</td>";
+                          test += "<td>" + element.c_std_id + "</td>";
+                          test +=
+                            "<td>" + element.c_fname + " " + element.c_lname + "</td>";
+                          test += "<td>" + status + "</td>";
+                          test +=
+                            "<td>" +
+                            '<button type="submit" formMethod="post" formAction="getValueFromSummary" class="ui inverted black  button" value="' +
+                            b +
+                            '" id="stddetail" name="stddetail">Detail</button>';
+                          test +=
+                            '<button type="submit" formMethod="post" formAction="deleteSTD" class="ui inverted black  button" value="' +
+                            element.c_std_id +
+                            '" id="delete" name="delete">Delete</button></td>';
+                          test += "</tr>";
+                        });
+                        // console.log(test)
+                        let csv = valueToCSV;
+                        return response.render("summaryclass", {
+                          test: test,
+                          class_id: request.session.classid,
+                          class_name: request.session.classname,
+                          test2: test2,
+                          csv: csv,
+                          fileName: filename,
+                          data: ""
+                        });
+                      }
+                    }
+                  })
                 }
-                valueToCSV +=
-                  i +
-                  1 +
-                  "," +
-                  ele.c_std_id +
-                  "," +
-                  ele.c_fname +
-                  " " +
-                  ele.c_lname +
-                  "," +
-                  _status;
-                if (i != res.length) {
-                  valueToCSV += "+";
-                }
-              });
-              // console.log(valueToCSV)
-              if (result == "") {
-                test2 += "<h2>" + icon + "No Student In Class</h2>";
-                let csv = valueToCSV;
-                return response.render("summaryclass", {
-                  test: test,
-                  class_id: request.session.classid,
-                  class_name: request.session.classname,
-                  test2: test2,
-                  csv: csv,
-                  fileName: filename
-                });
-              } else {
-                result.forEach((element, index) => {
-                  // console.log(element)
-                  let status = "";
-                  if (element.c_status == "n") {
-                    status = "Normal";
-                  } else if (element.c_status == "d") {
-                    status = "Delete";
-                  } else if (element.c_status == "w") {
-                    status = "Withdraw";
-                  }
-                  let no = index + 1;
-                  let b =
-                    request.session.classid +
-                    "," +
-                    element.c_std_id +
-                    "," +
-                    request.session.classname;
-                  let valueDash =
-                    request.session.classid + "," + request.session.classname;
-                  test += "<tr>";
-                  test += "<td>" + no + "</td>";
-                  test += "<td>" + element.c_std_id + "</td>";
-                  test +=
-                    "<td>" + element.c_fname + " " + element.c_lname + "</td>";
-                  test += "<td>" + status + "</td>";
-                  test +=
-                    "<td>" +
-                    '<button type="submit" formMethod="post" formAction="getValueFromSummary" class="ui inverted black  button" value="' +
-                    b +
-                    '" id="stddetail" name="stddetail">Detail</button>';
-                  test +=
-                    '<button type="submit" formMethod="post" formAction="deleteSTD" class="ui inverted black  button" value="' +
-                    element.c_std_id +
-                    '" id="delete" name="delete">Delete</button></td>';
-                  test += "</tr>";
-                });
-                // console.log(test)
-                let csv = valueToCSV;
-                return response.render("summaryclass", {
-                  test: test,
-                  class_id: request.session.classid,
-                  class_name: request.session.classname,
-                  test2: test2,
-                  csv: csv,
-                  fileName: filename,
-                  data: ""
-                });
-              }
+              })
             }
           );
         }

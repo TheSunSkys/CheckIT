@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Welcome Student!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="Logo/halfLogoV1.png">
+    <link rel="stylesheet" type="text/css" href="Semantic-UI-CSS-master/semantic.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="Semantic-UI-CSS-master/semantic.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+        }
+
+        #logo {
+            margin-top: 50px;
+            width: 200px;
+        }
+
+        #add {
+            float: right;
+        }
+
+        #logout {
+            float: right;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $("#addteacher").click(function () {
+                $('#add_teacher_modal')
+                    .modal('setting', 'transition', 'horizontal flip')
+                    .modal('show')
+                    ;
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="ui container">
+        <div class="ui grid">
+            <div class="eight wide column">
+                <a href="home"><img src="Logo/fullLogoV3.png" id="logo"></a>
+            </div>
+            <div class="eight wide column">
+                <br>
+                <br>
+                <button class="ui inverted red button" onclick="window.location.href='logout'" id="logout"><i
+                        class="sign out alternate icon"></i> Logout</button><br><br><br><br><br>
+            </div>
+            <div class="sixteen wide column">
+                <div align="right">
+                    <button class="ui inverted green button" id="addteacher" name="addteacher">Add Teacher</button>
+                </div>
+            </div>
+            <div class="sixteen wide column">
+                <table class="ui selectable inverted brown table" id="tclass">
+                    <thead align="center">
+                        <tr>
+                            <th>No</th>
+                            <th>Teacher Name</th>
+                            <th>Username</th>
+                            <th>E-mail</th>
+                            <th>Telephone</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="showclass" align="center">
+                        <form class="ui form" novalidate="novalidate" align ="center" >
+                            <%- table -%>
+                        </form>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+    <div class="ui modal" id="detail-modal">
+        <div class="header">Header</div>
+        <div class="scrolling content">
+        </div>
+    </div>
+    <div class="ui tiny modal" id="add_teacher_modal">
+        <i class="close icon"></i>
+        <div class="header">
+            <i class="edit outline icon"></i>Add Teacher
+        </div>
+        <div class=" content">
+            <form class="ui form error" method="POST" action="addTEACHER">
+                <label>Name</label>
+                <div class="two fields">
+                    <div class="field">
+                        <input type="text" name="fName" placeholder="First Name">
+                    </div>
+                    <div class="field">
+                        <input type="text" name="lName" placeholder="Last Name">
+                    </div>
+                </div>
+                <label>Username</label>
+                <div class="fields">
+                    <input type="text" name="username" id="username" >
+                </div>
+                <label>Password</label>
+                <div class="fields">
+                    <input type="password" name="password" id="password">
+                </div>
+                <label>Phone</label>
+                <div class="fields">
+                    <input type="text" pattern="[0-9]{10}" name="phone" id="phone" placeholder="Ex:0999999999">
+                </div>
+                <label>E-mail</label>
+                <div class="fields">
+                    <input type="text" name="mail" id="mail">
+                </div>
+                <button class="ui button" type="submit">Add Teacher</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
