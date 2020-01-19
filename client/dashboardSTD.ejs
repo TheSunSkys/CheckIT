@@ -49,6 +49,8 @@
                     startAngle: 240,
                     yValueFormatString: "##0.00\"%\"",
                     indexLabel: "{label} {y}",
+                    indexLabelFontColor: "#ffffff",
+                    indexLabelFontSize: 20,
                     dataPoints: [
                         {y: outClass, label: "Out Class"},
                         {y: inClass, label: "In Class"}
@@ -89,12 +91,12 @@
             </div>
             <div class="sixteen wide column">
                 <div align="right">
-                    <form method="POST" action="stddetail">
-                        <button class="ui inverted green button" type="submit"value="<%- class_id -%>,<%- stdID -%>,<%- class_name -%>" id="stddetail" name="stddetail">Student Lists</button>
+                    <form method="GET" action="stddetail">
+                        <button class="ui inverted green button" type="submit"value="<%- class_id -%>,<%- stdID -%>,<%- class_name -%>" id="stddetail" name="stddetail">Student Detail</button>
                     </form>
                     <br>
                     <form class="ui form error" method="POST" action="searchDashboardSTD">
-                        <div class="ui action input" style="width: 20%;">
+                        <div class="ui action input" style="width: 15%;">
                             <select class="ui search dropdown" id="dropdownValue" name="dropdownValue">
                                 <%- selectDay %>
                             </select>

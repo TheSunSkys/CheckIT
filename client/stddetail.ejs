@@ -29,13 +29,11 @@
         }
     </style>
     <script>
-        $(document).ready(function () {
-            $("#photo").click(function () {
-                $('#photo_modal')
-                    .modal('setting', 'transition', 'horizontal flip')
-                    .modal('show')
-                    ;
+        $(document).ready(function(){
+            $("#photo").click(function(){
+                $("p").slideToggle();
             });
+            $("p").slideUp()
         });
     </script>
 </head>
@@ -66,8 +64,29 @@
             </div>
             <div class="sixteen wide column">
                 <div align="right">
-                    <form method="POST" action="dashboardSTD">
-                        <button class="ui inverted green button" type="submit" formMethod="POST" formAction="dashboardSTD" value="<%- class_id -%>, <%- class_name -%>,<%- stdID -%>" id="dashboard" name="dashboard">Dashboard</button>
+                    <table>
+                        <tr>
+                            <td>
+                                <form method="POST" action="dashboardSTD">
+                                    <button class="ui inverted green button" type="submit" formMethod="GET" formAction="dashboardSTD" value="<%- class_id -%>, <%- class_name -%>,<%- stdID -%>" id="dashboard" name="dashboard">Dashboard</button>
+                                </form>
+                            </td>
+                            <td>
+                                <button class="ui inverted green button" id="photo" name="photo">Show Images</button>
+                            </td>
+                        </tr>
+                    </table>
+                    <br>
+                    <form class="ui form error" method="POST" action="getValueForSearch">
+                        <div class="ui action input" style="width: 15%;">
+                            <select class="ui search dropdown" id="dropdownValue" name="dropdownValue">
+                                <%- selectDay %>
+                            </select>
+                        </div>
+                        <!-- <input type="hidden" id="class_id" name="class_id" value="<%- class_id %>">
+                        <input type="hidden" id="class_name" name="class_name" value="<%- class_name -%>">
+                        <input type="hidden" id="stdID" name="stdID" value="<%- stdID -%>"> -->
+                        <button class="ui button" type="submit">Search</button>
                     </form>
                 </div>
                 <table class="ui selectable inverted brown table" id="tclass">
@@ -80,7 +99,6 @@
                             <th>Student ID</th>
                             <th>Student Name</th>
                             <th>Location</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="showclass" class="center aligned">
@@ -100,7 +118,7 @@
         </div>
         <div class=" content">
             <div class="eight wide column">
-                <img src="Logo/fullLogoV3.png" width="400px">
+                <img id="srcImg" src="" width="400px">
             </div>
         </div>
     </div>
